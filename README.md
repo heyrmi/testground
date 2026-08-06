@@ -76,11 +76,11 @@ your tooling rather than one framework's happy path.
 | Hypermedia | `/hx` | htmx 2, Alpine.js | later |
 | Realtime | `/live` | WebSocket, SSE | later |
 
-## Challenges in v0.3.0
+## Challenges in v0.4.0
 
-Twenty-four pages covering 96 distinct concepts, with 199 documented selectors.
-Every one of them is in the manifest, and every one can be made slow, broken
-or flaky through the control plane.
+Thirty-two pages covering 127 distinct concepts, with 286 documented selectors.
+Every one is in the manifest, and every one can be made slow, broken or flaky
+through the control plane.
 
 **Classic — `/classic`, no JavaScript at all**
 
@@ -109,7 +109,7 @@ or flaky through the control plane.
 | Debounced search that replaces its own results | T2 | Waiting for a state, not a duration |
 | Six ways to be invisible | T3 | `opacity: 0` is invisible and fully clickable |
 
-**Modern SPA — `/app`, React 19** · **Components — `/wc`, Lit**
+**Modern SPA — `/app`, React 19**
 
 | Challenge | Tier | Teaches |
 |---|---|---|
@@ -119,7 +119,20 @@ or flaky through the control plane.
 | Optimistic update that reverts | T3 | A green test against a value the server discards |
 | An endpoint that fails until it does not | T3 | Retry policy versus feature, and what retries hide |
 | Responses that arrive in the wrong order | T3 | A quiet network is not a finished page |
+| Six boxes pretending to be one field | T3 | One field made of six; paste is the bulk path |
+| Controls that are not the elements they look like | T3 | No checkbox, no range input, no value to set |
+| Elements that leave between finding and using them | T3 | Detachment, unstable ids, unmount mid-interaction |
+| A modal that is not where you think it is | T3 | Portals, focus traps, scroll locks, intercepted clicks |
+| A table that sorts on the server | T3 | Indeterminate is a third state; empty is not slow |
+| Two kinds of dragging | T3 | Native drag is not mouse movement |
+| Menus that need the pointer to stay put | T3 | A double click is also two single clicks |
+
+**Components — `/wc`, Lit and vanilla custom elements**
+
+| Challenge | Tier | Teaches |
+|---|---|---|
 | Three nested shadow roots | T3 | Shadow traversal, slots, composed events |
+| A closed shadow root, and what to do instead | T4 | Unreachable by design; properties and events are the surface |
 
 Every page ships with a description of what it does, why it breaks naive
 automation, the selectors worth locating, and a hint disclosure with the
@@ -181,11 +194,9 @@ committed so `go install` produces a working binary; rebuild it with
 
 ## Roadmap
 
-v0.3.0 adds the control plane, which is the point at which this becomes usable
-in real CI. What follows, in order:
+v0.4.0 completes the modern SPA and the web component zones. What follows, in
+order:
 
-- **v0.4.0** — the modern SPA in full: awkward inputs, DOM instability, tables
-  and data, drag and gestures.
 - **v0.5.0** — authentication, including token refresh mid-suite and a
   self-hosted fake identity provider.
 - **v0.6.0** — realtime.
