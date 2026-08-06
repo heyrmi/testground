@@ -1,0 +1,16 @@
+{{define "content" -}}
+<nav class="crumb"><a href="/classic/status-pages">← Back to the status pages</a></nav>
+<section class="stage">
+  <h1 data-testid="status-code">{{.Data.Code}}</h1>
+  <p data-testid="status-reason">{{.Data.Reason}}</p>
+  {{if .Data.RetryAfter}}
+  <p class="field__note">
+    This response carried <code>Retry-After: <span data-testid="status-retry-after">{{.Data.RetryAfter}}</span></code>.
+    It is telling you how long to wait; that is more reliable than any backoff you invent.
+  </p>
+  {{end}}
+  <p class="field__note">
+    Everything on this page rendered correctly. The response was still {{.Data.Code}}.
+  </p>
+</section>
+{{- end}}

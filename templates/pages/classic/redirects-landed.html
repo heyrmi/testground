@@ -1,0 +1,18 @@
+{{define "content" -}}
+<nav class="crumb"><a href="/classic/redirects">← Back to the redirects</a></nav>
+<section class="stage">
+  <p data-testid="landed">You are on the destination page.</p>
+  <table class="results">
+    <tbody>
+      <tr><th>arrived via</th><td data-testid="landed-via">{{.Data.Via}}</td></tr>
+      <tr><th>redirects followed</th><td data-testid="landed-hops">{{.Data.Hops}}</td></tr>
+      <tr><th>method received</th><td data-testid="landed-method">{{.Data.Method}}</td></tr>
+    </tbody>
+  </table>
+  <p class="field__note">
+    The browser followed every hop without asking. The URL you requested and the URL you are
+    reading are not the same string, and if you arrived by POST the method above tells you
+    whether the redirect kept it.
+  </p>
+</section>
+{{- end}}

@@ -1,0 +1,13 @@
+{{define "content" -}}
+{{template "challenge-header" .}}
+{{template "challenge-panel" .}}
+<section class="stage">
+  <ul class="linklist">
+    <li><a href="/classic/slow-pages/slow" data-testid="slow-link">Three seconds before the first byte</a></li>
+    <li><a href="/classic/slow-pages/hanging" data-testid="hanging-link">Arrives at once, never finishes loading</a></li>
+  </ul>
+  <p class="field__note">
+    Add <code>?ms=</code> to the first to change the delay. It is clamped to 30 seconds.
+  </p>
+</section>
+{{- end}}

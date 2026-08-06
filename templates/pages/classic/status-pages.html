@@ -1,0 +1,14 @@
+{{define "content" -}}
+{{template "challenge-header" .}}
+{{template "challenge-panel" .}}
+<section class="stage">
+  <ul class="linklist">
+    {{range .Data}}
+    <li>
+      <a href="/classic/status-pages/{{.Code}}" data-testid="status-link-{{.Code}}">{{.Code}}</a>
+      — {{.Reason}}{{if .RetryAfter}} <span class="tag">Retry-After: {{.RetryAfter}}</span>{{end}}
+    </li>
+    {{end}}
+  </ul>
+</section>
+{{- end}}

@@ -1,0 +1,15 @@
+{{define "head" -}}
+<meta http-equiv="refresh" content="1;url=/classic/redirects/landed?via=meta">
+{{- end}}
+
+{{define "content" -}}
+<section class="stage">
+  <p data-testid="meta-waiting">
+    This document finished loading, successfully, and will replace itself in one second.
+  </p>
+  <p class="field__note">
+    No Location header was sent and no redirect status was used. A navigation wait can
+    resolve right here, on the page you were leaving.
+  </p>
+</section>
+{{- end}}

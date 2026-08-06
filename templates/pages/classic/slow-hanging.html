@@ -1,0 +1,16 @@
+{{define "head" -}}
+<link rel="stylesheet" href="/classic/slow-pages/never">
+{{- end}}
+
+{{define "content" -}}
+<nav class="crumb"><a href="/classic/slow-pages">← Back</a></nav>
+<section class="stage">
+  <p data-testid="hanging-body">
+    This document is complete and every element on it is usable right now.
+  </p>
+  <p class="field__note">
+    A stylesheet on this page will never answer, so the load event will never fire. Waiting
+    for the document is enough; waiting for the whole load is a guaranteed timeout.
+  </p>
+</section>
+{{- end}}

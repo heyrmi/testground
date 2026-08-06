@@ -41,6 +41,9 @@ func pages(opts Options) []page {
 		pickers(),
 		buttons(),
 		fieldStates(),
+		redirects(),
+		statusPages(),
+		slowPages(),
 	}
 	if opts.crossOrigin() {
 		all = append(all, crossOriginFrame(opts))

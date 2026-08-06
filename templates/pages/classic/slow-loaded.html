@@ -1,0 +1,7 @@
+{{define "content" -}}
+<nav class="crumb"><a href="/classic/slow-pages">← Back</a></nav>
+<section class="stage">
+  <p data-testid="slow-body">The server finally answered.</p>
+  <p class="field__note">It waited <b data-testid="slow-ms">{{.Data.DelayMs}}</b> ms before sending a byte.</p>
+</section>
+{{- end}}

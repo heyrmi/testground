@@ -1,0 +1,20 @@
+{{define "content" -}}
+{{template "challenge-header" .}}
+{{template "challenge-panel" .}}
+<section class="stage">
+  <h2 class="stage__heading">Chains</h2>
+  <ul class="linklist">
+    <li><a href="/classic/redirects/chain/1" data-testid="chain-link">Three hops, then the destination</a></li>
+    <li><a href="/classic/redirects/meta" data-testid="meta-link">Meta refresh — not an HTTP redirect at all</a></li>
+  </ul>
+
+  <h2 class="stage__heading">One link per redirect status</h2>
+  <ul class="linklist">
+    <li><a href="/classic/redirects/code/301" data-testid="code-301">301 Moved Permanently</a></li>
+    <li><a href="/classic/redirects/code/302" data-testid="code-302">302 Found</a></li>
+    <li><a href="/classic/redirects/code/303" data-testid="code-303">303 See Other</a></li>
+    <li><a href="/classic/redirects/code/307" data-testid="code-307">307 Temporary Redirect — keeps the method</a></li>
+    <li><a href="/classic/redirects/code/308" data-testid="code-308">308 Permanent Redirect — keeps the method</a></li>
+  </ul>
+</section>
+{{- end}}

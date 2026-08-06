@@ -622,3 +622,12 @@ iframe {
   border-radius: var(--radius);
   background: var(--bg);
 }
+
+.linklist {
+  margin: 0 0 1.5rem;
+  padding-left: 1.1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  font-size: 0.9375rem;
+}
