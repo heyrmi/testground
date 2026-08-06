@@ -24,6 +24,8 @@ func Challenges() []challenge.Challenge {
 		races(),
 		otpInput(),
 		fakeControls(),
+		detachedElements(),
+		modalPortal(),
 	}
 }
 
