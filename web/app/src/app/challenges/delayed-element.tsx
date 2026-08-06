@@ -42,7 +42,19 @@ function DelayedElement() {
         )}
       </div>
 
-      <button data-testid="restart" onClick={() => setAttempt((n) => n + 1)}>
+      {/*
+        The message is cleared here rather than left to the effect below.
+        Resetting only in the effect takes a second commit to land, so the
+        stale message survived a frame or two after the click -- an
+        undeclared race on a page whose entire subject is declared timing.
+      */}
+      <button
+        data-testid="restart"
+        onClick={() => {
+          setArrived(false)
+          setAttempt((n) => n + 1)
+        }}
+      >
         Run the wait again
       </button>
     </ChallengePage>
