@@ -33,6 +33,7 @@ func Challenges() []challenge.Challenge {
 		pointerMenus(),
 		tokenRefresh(),
 		hostileLocators(),
+		domScale(),
 	}
 }
 
