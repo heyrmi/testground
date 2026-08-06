@@ -53,6 +53,19 @@ type formView[T any] struct {
 // redirect is not incidental -- it means a refresh cannot resubmit, and it
 // means every element reference a test was holding is now stale.
 func formPage[T any](meta challenge.Challenge, read func(*http.Request) T) page {
+	return submissionPage(meta, func(r *http.Request) error { return r.ParseForm() }, read)
+}
+
+// uploadPage is formPage for a form that carries files. Multipart bodies need
+// a different parse and a memory bound, and read runs after that bound has
+// been applied.
+func uploadPage[T any](meta challenge.Challenge, maxMemory int64, read func(*http.Request) T) page {
+	return submissionPage(meta, func(r *http.Request) error {
+		return r.ParseMultipartForm(maxMemory)
+	}, read)
+}
+
+func submissionPage[T any](meta challenge.Challenge, parse func(*http.Request) error, read func(*http.Request) T) page {
 	state := func(r *http.Request) *submissions[T] {
 		return session.Value(session.MustFromContext(r.Context()), meta.ID, func() *submissions[T] {
 			return &submissions[T]{}
@@ -74,8 +87,8 @@ func formPage[T any](meta challenge.Challenge, read func(*http.Request) T) page 
 			})
 
 			r.Post("/", func(w http.ResponseWriter, req *http.Request) {
-				if err := req.ParseForm(); err != nil {
-					httpx.Fail(w, http.StatusBadRequest, "could not parse the form")
+				if err := parse(req); err != nil {
+					httpx.Fail(w, http.StatusBadRequest, "could not parse the form: "+err.Error())
 					return
 				}
 				state(req).record(read(req))

@@ -1,0 +1,61 @@
+{{define "content" -}}
+{{template "challenge-header" .}}
+{{template "challenge-panel" .}}
+
+<section class="stage">
+  <form method="post" action="/classic/uploads" enctype="multipart/form-data" class="stack" data-testid="form">
+    <div class="fields">
+      <div class="field">
+        <label for="single">One file</label>
+        <input id="single" name="single" type="file" data-testid="file-single">
+      </div>
+      <div class="field">
+        <label for="multiple">Several files</label>
+        <input id="multiple" name="multiple" type="file" multiple data-testid="file-multiple">
+      </div>
+      <div class="field">
+        <label for="restricted">Images only, allegedly</label>
+        <input id="restricted" name="restricted" type="file" accept=".png,.jpg,.jpeg" data-testid="file-restricted">
+        <p class="field__note">
+          <code>accept</code> filters the operating-system picker. It does not stop anything.
+        </p>
+      </div>
+    </div>
+
+    <div class="actions">
+      <button type="submit" class="primary" data-testid="submit">Upload</button>
+    </div>
+
+    <p class="field__note">
+      The server keeps files under 64 kB whose extension it recognises, and reports the rest.
+      Both checks run after the whole file has arrived.
+    </p>
+  </form>
+
+  {{with .Data.Latest}}
+  <h2 class="stage__heading">What the server received</h2>
+  <table class="results">
+    <thead>
+      <tr><th>field</th><th>name</th><th>size</th><th>type</th><th>verdict</th></tr>
+    </thead>
+    <tbody>
+      {{range .Files}}
+      <tr data-testid="upload-row" data-name="{{.Name}}">
+        <td>{{.Field}}</td>
+        <td>{{.Name}}</td>
+        <td>{{.Size}}</td>
+        <td>{{.Type}}</td>
+        <td>{{if .Rejected}}rejected — {{.Rejected}}{{else}}accepted{{end}}</td>
+      </tr>
+      {{end}}
+    </tbody>
+  </table>
+  <p class="field__note">
+    Accepted <b data-testid="accepted-count">{{.Accepted}}</b>,
+    rejected <b data-testid="rejected-count">{{.Rejected}}</b>.
+  </p>
+  {{else}}
+  <p class="empty" data-testid="no-submission">Nothing has been uploaded yet.</p>
+  {{end}}
+</section>
+{{- end}}

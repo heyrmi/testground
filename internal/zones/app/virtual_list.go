@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/heyrmi/testground/internal/challenge"
+	"github.com/heyrmi/testground/internal/fake"
 	"github.com/heyrmi/testground/internal/httpx"
 	"github.com/heyrmi/testground/internal/session"
 )
@@ -94,42 +95,14 @@ func generateRows(sess *session.Session, count int) []listRow {
 	rows := make([]listRow, count)
 
 	for i := range rows {
-		first := firstNames[stream.IntN(len(firstNames))]
-		last := lastNames[stream.IntN(len(lastNames))]
+		person := fake.NewPerson(stream, i)
 		rows[i] = listRow{
 			Index:  i,
-			Name:   first + " " + last,
-			Email:  fmt.Sprintf("%s.%s%d@example.test", lower(first), lower(last), i),
-			Status: rowStatuses[stream.IntN(len(rowStatuses))],
-			Amount: fmt.Sprintf("%d.%02d", stream.IntN(9000)+10, stream.IntN(100)),
+			Name:   person.Name,
+			Email:  person.Email,
+			Status: person.Status,
+			Amount: person.Amount,
 		}
 	}
 	return rows
 }
-
-func lower(s string) string {
-	out := []byte(s)
-	for i, c := range out {
-		if c >= 'A' && c <= 'Z' {
-			out[i] = c + ('a' - 'A')
-		}
-	}
-	return string(out)
-}
-
-// A small corpus keeps the binary free of a fake-data dependency while still
-// producing rows that read like records rather than like lorem ipsum.
-var (
-	firstNames = []string{
-		"Ama", "Bilal", "Chandra", "Dilnoza", "Eero", "Fatima", "Gustavo", "Hana",
-		"Ines", "Jarrah", "Kenji", "Lucia", "Mateo", "Nadia", "Oskar", "Priya",
-		"Quentin", "Rahel", "Sonia", "Tomas", "Ugo", "Vera", "Wen", "Yusuf", "Zofia",
-	}
-	lastNames = []string{
-		"Adeyemi", "Bergström", "Chowdhury", "Delacroix", "Eskildsen", "Ferreira",
-		"Gruber", "Halvorsen", "Iqbal", "Jankowski", "Kaminski", "Lindqvist",
-		"Moretti", "Nakamura", "Okonkwo", "Petrov", "Quiroga", "Rahman", "Silva",
-		"Takahashi", "Ustinov", "Vasquez", "Watanabe", "Yilmaz", "Zeeman",
-	}
-	rowStatuses = []string{"active", "pending", "suspended", "closed"}
-)

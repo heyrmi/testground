@@ -1,0 +1,19 @@
+{{define "content" -}}
+{{template "challenge-header" .}}
+{{template "challenge-panel" .}}
+
+<section class="stage">
+  <ul class="linklist">
+    <li><a href="/classic/downloads/report.csv" data-testid="download-csv">report.csv — generated from your seed</a></li>
+    <li><a href="/classic/downloads/bundle.zip" data-testid="download-zip">bundle.zip — two files in an archive</a></li>
+    <li><a href="/classic/downloads/pixel.png" data-testid="download-png">pixel.png — a generated image</a></li>
+    <li><a href="/classic/downloads/notes.txt" data-testid="download-inline">notes.txt — served inline, so it is not a download at all</a></li>
+    <li><a href="/classic/downloads/unicode.txt" data-testid="download-unicode">a filename that is not ASCII</a></li>
+    <li><a href="/classic/downloads/slow.csv" data-testid="download-slow">slow.csv — three seconds of generation first</a></li>
+  </ul>
+  <p class="field__note">
+    Every file here is a pure function of your session seed, so the bytes are the same on
+    every run and safe to assert on exactly. Add <code>?rows=</code> to the CSV.
+  </p>
+</section>
+{{- end}}

@@ -44,6 +44,8 @@ func pages(opts Options) []page {
 		redirects(),
 		statusPages(),
 		slowPages(),
+		uploads(),
+		downloads(),
 	}
 	if opts.crossOrigin() {
 		all = append(all, crossOriginFrame(opts))
