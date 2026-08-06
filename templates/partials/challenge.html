@@ -1,0 +1,45 @@
+{{define "challenge-header" -}}
+<nav class="crumb"><a href="/" data-testid="back-to-index">← All challenges</a></nav>
+<header class="challenge__head">
+  <div class="badges">
+    <span class="badge badge--{{lower .Challenge.Tier}}" data-testid="challenge-tier">{{.Challenge.Tier}}</span>
+    <span class="badge" data-testid="challenge-zone">{{.Challenge.Zone}}</span>
+    <span class="tag">{{.Challenge.Category}}</span>
+    {{if eq .Challenge.Stability "experimental"}}<span class="badge badge--t4">experimental</span>{{end}}
+  </div>
+  <h1 data-testid="challenge-title">{{.Challenge.Title}}</h1>
+</header>
+{{- end}}
+
+{{define "challenge-panel" -}}
+<section class="panel" data-testid="challenge-panel">
+  <h2>What this page does</h2>
+  <p>{{.Challenge.Summary}}</p>
+
+  <h2>Why it breaks naive automation</h2>
+  <p>{{.Challenge.WhyHard}}</p>
+
+  {{if .Challenge.Selectors}}
+  <h2>Elements worth locating</h2>
+  <table class="selectors">
+    <thead>
+      <tr><th>data-testid</th><th>Role</th><th>What it is</th></tr>
+    </thead>
+    <tbody>
+      {{range .Challenge.Selectors}}
+      <tr>
+        <td>{{.TestID}}</td>
+        <td>{{if .Role}}{{.Role}}{{else}}—{{end}}</td>
+        <td>{{.Note}}</td>
+      </tr>
+      {{end}}
+    </tbody>
+  </table>
+  {{end}}
+
+  <details class="hint" data-testid="challenge-hint">
+    <summary>Show hint</summary>
+    <p>{{.Challenge.Hint}}</p>
+  </details>
+</section>
+{{- end}}

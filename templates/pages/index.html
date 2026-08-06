@@ -1,0 +1,44 @@
+{{define "content" -}}
+<section class="intro">
+  <h1>A testing playground that does not move under you.</h1>
+  <p>
+    Every challenge below runs from the binary on your machine. No network, no
+    rate limits, no page quietly changing and breaking the course you wrote
+    last year. Once a page is released its DOM contract is frozen.
+  </p>
+  <p>
+    Behaviour is deterministic unless you ask for chaos. Seed
+    <code>{{.Seed}}</code> produces the same content on every run and every
+    machine, and your session is isolated from every other client.
+  </p>
+</section>
+
+{{if .Data.Groups}}
+  {{range .Data.Groups}}
+  <section class="zone" data-testid="zone-{{.Zone.ID}}">
+    <div class="zone__head">
+      <h2>{{.Zone.Title}}</h2>
+      <span class="zone__prefix">{{.Zone.Prefix}}</span>
+      <span class="zone__tech">{{.Zone.Technology}}</span>
+    </div>
+    <div class="cards">
+      {{range .Challenges}}
+      <a class="card" href="{{.URL}}" data-testid="challenge-card-{{.ID}}">
+        <div class="badges">
+          <span class="badge badge--{{lower .Tier}}">{{.Tier}}</span>
+          <span class="tag">{{.Category}}</span>
+        </div>
+        <div class="card__title">{{.Title}}</div>
+        <p class="card__summary">{{.Summary}}</p>
+        <div class="card__url">{{.URL}}</div>
+      </a>
+      {{end}}
+    </div>
+  </section>
+  {{end}}
+{{else}}
+  <p class="empty" data-testid="no-challenges">
+    This build ships no challenges.
+  </p>
+{{end}}
+{{- end}}

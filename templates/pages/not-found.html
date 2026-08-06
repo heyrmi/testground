@@ -1,0 +1,9 @@
+{{define "content" -}}
+<section class="intro">
+  <h1 data-testid="not-found-heading">404 — no such page</h1>
+  <p>
+    Nothing is served at <code data-testid="not-found-path">{{.Data.Path}}</code>.
+  </p>
+  <p><a href="/">Back to the challenge index</a></p>
+</section>
+{{- end}}

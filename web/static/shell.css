@@ -1,0 +1,435 @@
+/*
+ * The shared chrome for every zone. Server-rendered pages use it directly and
+ * the SPA links it too, so a challenge looks the same whether it was built
+ * from a Go template or from React.
+ *
+ * Vendored on purpose: the playground must work with no network at all.
+ */
+
+:root {
+  color-scheme: light dark;
+
+  --bg: #faf9f7;
+  --surface: #ffffff;
+  --surface-sunken: #f3f1ed;
+  --border: #e5e2db;
+  --text: #1c1b19;
+  --muted: #6f6b63;
+  --accent: #b4541e;
+  --accent-soft: #fbeee6;
+
+  --tier-1: #2f7d4f;
+  --tier-2: #2b6cb0;
+  --tier-3: #b06a12;
+  --tier-4: #b23434;
+
+  --radius: 10px;
+  --shadow: 0 1px 2px rgb(28 27 25 / 6%), 0 4px 16px rgb(28 27 25 / 4%);
+  --font: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #171614;
+    --surface: #201f1c;
+    --surface-sunken: #1b1a17;
+    --border: #322f2a;
+    --text: #ece9e3;
+    --muted: #9c978e;
+    --accent: #e08a52;
+    --accent-soft: #2b231c;
+
+    --tier-1: #6cc08b;
+    --tier-2: #78aee6;
+    --tier-3: #e0ab5f;
+    --tier-4: #e58080;
+
+    --shadow: 0 1px 2px rgb(0 0 0 / 30%), 0 4px 16px rgb(0 0 0 / 20%);
+  }
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font);
+  font-size: 16px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+a {
+  color: var(--accent);
+  text-decoration-thickness: 1px;
+  text-underline-offset: 2px;
+}
+
+code,
+kbd,
+pre {
+  font-family: var(--mono);
+  font-size: 0.875em;
+}
+
+.shell {
+  max-width: 68rem;
+  margin: 0 auto;
+  padding: 0 1.5rem 5rem;
+}
+
+/* Header ------------------------------------------------------------------ */
+
+.masthead {
+  border-bottom: 1px solid var(--border);
+  background: var(--surface);
+}
+
+.masthead__inner {
+  max-width: 68rem;
+  margin: 0 auto;
+  padding: 1rem 1.5rem;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.75rem 1.25rem;
+}
+
+.masthead__name {
+  font-size: 1.0625rem;
+  font-weight: 650;
+  letter-spacing: -0.01em;
+  color: var(--text);
+  text-decoration: none;
+}
+
+.masthead__name span {
+  color: var(--accent);
+}
+
+.masthead__meta {
+  margin-left: auto;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem 1rem;
+  font-family: var(--mono);
+  font-size: 0.75rem;
+  color: var(--muted);
+}
+
+.masthead__meta b {
+  font-weight: 500;
+  color: var(--text);
+}
+
+/* Page intro -------------------------------------------------------------- */
+
+.intro {
+  padding: 3rem 0 2.5rem;
+  max-width: 46rem;
+}
+
+.intro h1 {
+  margin: 0 0 0.75rem;
+  font-size: clamp(1.9rem, 4vw, 2.6rem);
+  line-height: 1.15;
+  letter-spacing: -0.025em;
+}
+
+.intro p {
+  margin: 0 0 1rem;
+  color: var(--muted);
+  font-size: 1.0625rem;
+}
+
+/* Zones and cards --------------------------------------------------------- */
+
+.zone {
+  margin-bottom: 3rem;
+}
+
+.zone__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.5rem 0.9rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 1.25rem;
+}
+
+.zone__head h2 {
+  margin: 0;
+  font-size: 1.1rem;
+  letter-spacing: -0.01em;
+}
+
+.zone__prefix {
+  font-family: var(--mono);
+  font-size: 0.8rem;
+  color: var(--accent);
+}
+
+.zone__tech {
+  font-size: 0.8125rem;
+  color: var(--muted);
+}
+
+.cards {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(auto-fill, minmax(19rem, 1fr));
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  padding: 1.1rem 1.2rem 1.2rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  text-decoration: none;
+  color: inherit;
+  transition: border-color 120ms ease, transform 120ms ease;
+}
+
+.card:hover,
+.card:focus-visible {
+  border-color: var(--accent);
+  transform: translateY(-1px);
+}
+
+.card__title {
+  font-size: 1rem;
+  font-weight: 620;
+  letter-spacing: -0.01em;
+}
+
+.card__summary {
+  margin: 0;
+  font-size: 0.875rem;
+  color: var(--muted);
+  flex: 1;
+}
+
+.card__url {
+  font-family: var(--mono);
+  font-size: 0.75rem;
+  color: var(--muted);
+}
+
+/* Badges ------------------------------------------------------------------ */
+
+.badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  align-items: center;
+}
+
+.badge {
+  display: inline-block;
+  padding: 0.1rem 0.45rem;
+  border-radius: 999px;
+  border: 1px solid currentcolor;
+  font-family: var(--mono);
+  font-size: 0.6875rem;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  color: var(--muted);
+}
+
+.badge--t1 { color: var(--tier-1); }
+.badge--t2 { color: var(--tier-2); }
+.badge--t3 { color: var(--tier-3); }
+.badge--t4 { color: var(--tier-4); }
+
+.tag {
+  font-size: 0.75rem;
+  color: var(--muted);
+  background: var(--surface-sunken);
+  border-radius: 5px;
+  padding: 0.1rem 0.4rem;
+}
+
+/* Challenge chrome -------------------------------------------------------- */
+
+.crumb {
+  padding-top: 1.5rem;
+  font-size: 0.8125rem;
+}
+
+.challenge__head {
+  padding: 0.5rem 0 1.5rem;
+}
+
+.challenge__head h1 {
+  margin: 0.4rem 0 0.6rem;
+  font-size: clamp(1.6rem, 3vw, 2.1rem);
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+}
+
+.panel {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.25rem 1.4rem;
+  margin-bottom: 1.5rem;
+}
+
+.panel h2 {
+  margin: 0 0 0.4rem;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+}
+
+.panel p {
+  margin: 0 0 1rem;
+}
+
+.panel p:last-child {
+  margin-bottom: 0;
+}
+
+.hint {
+  border-top: 1px solid var(--border);
+  margin-top: 1.1rem;
+  padding-top: 0.9rem;
+}
+
+.hint summary {
+  cursor: pointer;
+  font-weight: 550;
+  font-size: 0.9375rem;
+  color: var(--accent);
+}
+
+.hint p {
+  margin: 0.7rem 0 0;
+  color: var(--muted);
+}
+
+.selectors {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.875rem;
+}
+
+.selectors th {
+  text-align: left;
+  font-size: 0.6875rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+  font-weight: 500;
+  padding: 0 0.9rem 0.4rem 0;
+}
+
+.selectors td {
+  padding: 0.35rem 0.9rem 0.35rem 0;
+  border-top: 1px solid var(--border);
+  vertical-align: top;
+}
+
+.selectors td:first-child {
+  font-family: var(--mono);
+  font-size: 0.8125rem;
+  color: var(--accent);
+  white-space: nowrap;
+}
+
+.selectors td:last-child {
+  color: var(--muted);
+}
+
+/* The challenge itself ---------------------------------------------------- */
+
+.stage {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.75rem;
+  min-height: 12rem;
+}
+
+.stage__label {
+  font-size: 0.6875rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+  margin-bottom: 1rem;
+}
+
+/* Controls ---------------------------------------------------------------- */
+
+button,
+.button {
+  font: inherit;
+  font-size: 0.9375rem;
+  font-weight: 500;
+  padding: 0.45rem 0.95rem;
+  border-radius: 7px;
+  border: 1px solid var(--border);
+  background: var(--surface-sunken);
+  color: var(--text);
+  cursor: pointer;
+  transition: border-color 120ms ease;
+}
+
+button:hover:not(:disabled) {
+  border-color: var(--accent);
+}
+
+button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+button.primary {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* Footer ------------------------------------------------------------------ */
+
+.colophon {
+  border-top: 1px solid var(--border);
+  margin-top: 3rem;
+  padding-top: 1.25rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1.5rem;
+  font-size: 0.8125rem;
+  color: var(--muted);
+}
+
+.empty {
+  padding: 3rem 0;
+  color: var(--muted);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}

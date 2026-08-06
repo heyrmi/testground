@@ -1,0 +1,20 @@
+{{define "layout" -}}
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{{.Title}} · testground</title>
+  <link rel="stylesheet" href="/static/shell.css">
+  {{block "head" .}}{{end}}
+</head>
+<body>
+  {{template "masthead" .}}
+  <main class="shell">
+    {{template "content" .}}
+    {{template "colophon" .}}
+  </main>
+  {{block "scripts" .}}{{end}}
+</body>
+</html>
+{{- end}}

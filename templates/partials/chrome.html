@@ -1,0 +1,21 @@
+{{define "masthead" -}}
+<header class="masthead">
+  <div class="masthead__inner">
+    <a class="masthead__name" href="/">test<span>ground</span></a>
+    <div class="masthead__meta">
+      <span>version <b data-testid="meta-version">{{.Version}}</b></span>
+      <span>seed <b data-testid="meta-seed">{{.Seed}}</b></span>
+      <span>session <b data-testid="meta-session">{{.Session}}</b></span>
+    </div>
+  </div>
+</header>
+{{- end}}
+
+{{define "colophon" -}}
+<footer class="colophon">
+  <span>Deterministic by default. Same seed, same page.</span>
+  <a href="/api/challenges">Challenge manifest</a>
+  <a href="/api/health">Health</a>
+  <a href="https://github.com/heyrmi/testground">Source</a>
+</footer>
+{{- end}}
