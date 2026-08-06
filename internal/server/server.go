@@ -21,10 +21,14 @@ import (
 	"github.com/heyrmi/testground/internal/session"
 )
 
-// Zone is a set of challenge routes mounted under a path prefix.
+// Zone is one frontend's routes. Pages are mounted under the zone's path
+// prefix and its JSON under /api/<id>, which keeps every JSON route in the
+// playground under /api and every zone's code in one package.
 type Zone struct {
-	Prefix  string
-	Handler http.Handler
+	ID     challenge.Zone
+	Prefix string
+	Pages  http.Handler
+	API    http.Handler
 }
 
 // Options configures a Server. Everything it needs is passed in; the package
@@ -34,6 +38,7 @@ type Options struct {
 	Sessions *session.Store
 	Renderer *render.Renderer
 	Static   fs.FS
+	Assets   fs.FS
 	Zones    []Zone
 	Version  string
 	Logger   *slog.Logger
@@ -82,6 +87,11 @@ func (s *Server) routes() chi.Router {
 	if s.opts.Static != nil {
 		r.Handle("/static/*", http.StripPrefix("/static/", cacheableFileServer(s.opts.Static)))
 	}
+	// Served without stripping: the bundle already lives under assets/ inside
+	// the build output, so the request path maps straight onto the tree.
+	if s.opts.Assets != nil {
+		r.Handle("/assets/*", cacheableFileServer(s.opts.Assets))
+	}
 	r.Get("/api/health", s.handleHealth)
 	r.Get("/api/version", s.handleVersion)
 
@@ -93,7 +103,10 @@ func (s *Server) routes() chi.Router {
 		r.Get("/api/challenges/{id}", s.handleChallenge)
 
 		for _, zone := range s.opts.Zones {
-			r.Mount(zone.Prefix, zone.Handler)
+			r.Mount(zone.Prefix, zone.Pages)
+			if zone.API != nil {
+				r.Mount("/api/"+string(zone.ID), zone.API)
+			}
 		}
 
 		r.NotFound(s.handleNotFound)

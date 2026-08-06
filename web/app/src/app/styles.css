@@ -1,0 +1,19 @@
+/*
+ * Tailwind powers the inside of each challenge. The chrome around it comes
+ * from /static/shell.css, which the server-rendered zones use too, so a
+ * challenge looks the same whichever zone rendered it.
+ */
+@import 'tailwindcss';
+
+/* Bridge the shell's design tokens into Tailwind so utilities and the shared
+   chrome cannot drift apart. */
+@theme inline {
+  --color-surface: var(--surface);
+  --color-sunken: var(--surface-sunken);
+  --color-line: var(--border);
+  --color-ink: var(--text);
+  --color-muted: var(--muted);
+  --color-accent: var(--accent);
+  --font-sans: var(--font);
+  --font-mono: var(--mono);
+}
