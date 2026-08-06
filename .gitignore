@@ -25,3 +25,6 @@ node_modules/
 
 # Playwright MCP scratch output
 .playwright-mcp/
+
+# Internal planning document, deliberately not published
+PRD.md
