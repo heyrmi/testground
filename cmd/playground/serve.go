@@ -44,8 +44,15 @@ machines, which is what a container or a shared workshop host wants.`,
 				return err
 			}
 
-			cmd.Printf("testground %s listening on http://%s (seed %d)\n", version, addr, seed)
-			return srv.Serve(cmd.Context(), addr)
+			// Bind first, announce second: a failed bind should report the
+			// failure rather than a URL that was never served.
+			listener, err := srv.Listen(addr)
+			if err != nil {
+				return err
+			}
+
+			cmd.Printf("testground %s listening on http://%s (seed %d)\n", version, listener.Addr(), seed)
+			return srv.Serve(cmd.Context(), listener)
 		},
 	}
 

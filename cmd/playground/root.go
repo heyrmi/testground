@@ -28,9 +28,12 @@ A deterministic, offline testing playground for QA engineers.
 Every challenge runs from this binary. Nothing is fetched from a network, page
 contracts are frozen once released, and the same seed produces the same content
 on every run and every machine.`),
-		SilenceUsage:  true,
-		SilenceErrors: true,
-		Version:       build.Current().Version,
+		// Usage is silenced so a runtime failure reports the failure rather
+		// than a wall of flags. Errors are not silenced: cobra prints them
+		// with the prefix set below, which is the only thing standing between
+		// a bad --addr and an exit code with no explanation.
+		SilenceUsage: true,
+		Version:      build.Current().Version,
 	}
 
 	root.PersistentFlags().StringVar(&logs.level, "log-level", "info", "log level: debug, info, warn or error")
@@ -42,8 +45,6 @@ on every run and every machine.`),
 		newVersionCommand(),
 	)
 
-	// Cobra prints errors itself only when SilenceErrors is off; reporting
-	// here keeps the message on stderr and off the usage text.
 	cobra.EnableCommandSorting = false
 	root.SetErrPrefix("playground:")
 	return root

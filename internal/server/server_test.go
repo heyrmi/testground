@@ -1,11 +1,16 @@
 package server
 
 import (
+	"context"
 	"encoding/json"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"strings"
 	"testing"
+	"time"
+
+	"github.com/go-chi/chi/v5"
 
 	testground "github.com/heyrmi/testground"
 	"github.com/heyrmi/testground/internal/challenge"
@@ -31,7 +36,7 @@ func fixture() challenge.Challenge {
 	}
 }
 
-func newTestServer(t *testing.T) http.Handler {
+func newServer(t *testing.T, zones ...Zone) *Server {
 	t.Helper()
 
 	renderer, err := render.New(testground.Templates(), "0.0.0-test", discardLogger())
@@ -43,12 +48,18 @@ func newTestServer(t *testing.T) http.Handler {
 		Sessions: session.NewStore(session.Options{Seed: 42}),
 		Renderer: renderer,
 		Static:   testground.Static(),
+		Zones:    zones,
 		Version:  "0.0.0-test",
 	})
 	if err != nil {
 		t.Fatalf("building server: %v", err)
 	}
-	return srv.Handler()
+	return srv
+}
+
+func newTestServer(t *testing.T) http.Handler {
+	t.Helper()
+	return newServer(t).Handler()
 }
 
 func get(t *testing.T, h http.Handler, path string, headers map[string]string) *httptest.ResponseRecorder {
@@ -173,5 +184,74 @@ func TestEveryResponseAdvertisesItsRequestID(t *testing.T) {
 
 	if rec.Header().Get(RequestIDHeader) == "" {
 		t.Error("no request id to correlate a failing test with the log")
+	}
+}
+
+// A request that is still running when an interrupt arrives must finish. If
+// its context is cancelled instead, a stalling challenge answers 200 with an
+// empty body and a mutation it never applied -- the exact false green this
+// playground exists to teach people to spot.
+func TestShutdownLetsInFlightRequestsFinish(t *testing.T) {
+	reached := make(chan struct{})
+	stalling := chi.NewRouter()
+	stalling.Get("/stall", func(w http.ResponseWriter, r *http.Request) {
+		close(reached)
+		select {
+		case <-time.After(300 * time.Millisecond):
+			w.Write([]byte("finished"))
+		case <-r.Context().Done():
+			w.Write([]byte("cancelled"))
+		}
+	})
+
+	srv := newServer(t, Zone{ID: challenge.ZoneApp, Prefix: "/app", Pages: stalling})
+	listener, err := srv.Listen("127.0.0.1:0")
+	if err != nil {
+		t.Fatalf("binding: %v", err)
+	}
+
+	ctx, interrupt := context.WithCancel(context.Background())
+	served := make(chan error, 1)
+	go func() { served <- srv.Serve(ctx, listener) }()
+
+	body := make(chan string, 1)
+	go func() {
+		res, err := http.Get("http://" + listener.Addr().String() + "/app/stall")
+		if err != nil {
+			body <- "request failed: " + err.Error()
+			return
+		}
+		defer res.Body.Close()
+		read, _ := io.ReadAll(res.Body)
+		body <- string(read)
+	}()
+
+	<-reached
+	interrupt()
+
+	if got := <-body; got != "finished" {
+		t.Fatalf("shutdown truncated an in-flight request: body %q", got)
+	}
+	if err := <-served; err != nil {
+		t.Fatalf("serve returned %v", err)
+	}
+}
+
+// Binding must happen before the caller announces an address, and a port of
+// zero must resolve to the one actually bound.
+func TestListenResolvesTheBoundAddress(t *testing.T) {
+	srv := newServer(t)
+
+	listener, err := srv.Listen("127.0.0.1:0")
+	if err != nil {
+		t.Fatalf("binding: %v", err)
+	}
+	defer listener.Close()
+
+	if addr := listener.Addr().String(); strings.HasSuffix(addr, ":0") {
+		t.Fatalf("address %q was never resolved", addr)
+	}
+	if _, err := srv.Listen(listener.Addr().String()); err == nil {
+		t.Fatal("binding an address already in use should fail loudly")
 	}
 }

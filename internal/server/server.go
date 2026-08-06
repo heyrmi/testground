@@ -116,24 +116,45 @@ func (s *Server) routes() chi.Router {
 	return r
 }
 
-// Serve runs the playground until ctx is cancelled, then drains in-flight
-// requests before returning.
-func (s *Server) Serve(ctx context.Context, addr string) error {
+// shutdownGrace bounds how long a stalling request may hold up shutdown. It
+// is longer than any latency a Phase 0 challenge can be asked for, so a normal
+// interrupt drains rather than truncates.
+const shutdownGrace = 35 * time.Second
+
+// Listen binds the address without serving, so a caller can report the address
+// it actually got before entering the serve loop. A port of 0 resolves here.
+func (s *Server) Listen(addr string) (net.Listener, error) {
+	listener, err := net.Listen("tcp", addr)
+	if err != nil {
+		return nil, fmt.Errorf("listening on %s: %w", addr, err)
+	}
+	return listener, nil
+}
+
+// Serve runs the playground until ctx is cancelled, then lets in-flight
+// requests finish before returning.
+func (s *Server) Serve(ctx context.Context, listener net.Listener) error {
 	httpServer := &http.Server{
-		Addr:              addr,
 		Handler:           s.Handler(),
 		ReadHeaderTimeout: 10 * time.Second,
 		// No write timeout: challenges deliberately stall, stream and hang,
 		// and a server-side deadline would cut those short.
-		BaseContext: func(net.Listener) context.Context { return ctx },
+		//
+		// Request contexts are deliberately detached from the shutdown signal.
+		// Deriving them from ctx would cancel every in-flight handler the
+		// instant an interrupt arrives, so a stalling challenge would answer
+		// 200 with an empty body and a mutation it never applied -- the exact
+		// class of false green this playground exists to teach people to spot.
+		// Draining is Shutdown's job.
+		BaseContext: func(net.Listener) context.Context { return context.WithoutCancel(ctx) },
 	}
 
 	go s.opts.Sessions.Run(ctx)
 
 	errs := make(chan error, 1)
 	go func() {
-		if err := httpServer.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
-			errs <- fmt.Errorf("listening on %s: %w", addr, err)
+		if err := httpServer.Serve(listener); err != nil && !errors.Is(err, http.ErrServerClosed) {
+			errs <- fmt.Errorf("serving on %s: %w", listener.Addr(), err)
 			return
 		}
 		errs <- nil
@@ -143,10 +164,19 @@ func (s *Server) Serve(ctx context.Context, addr string) error {
 	case err := <-errs:
 		return err
 	case <-ctx.Done():
-		shutdown, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		shutdown, cancel := context.WithTimeout(context.Background(), shutdownGrace)
 		defer cancel()
 		return httpServer.Shutdown(shutdown)
 	}
+}
+
+// ListenAndServe binds addr and serves it until ctx is cancelled.
+func (s *Server) ListenAndServe(ctx context.Context, addr string) error {
+	listener, err := s.Listen(addr)
+	if err != nil {
+		return err
+	}
+	return s.Serve(ctx, listener)
 }
 
 // discardLogger is the fallback for callers that do not want request logs.
