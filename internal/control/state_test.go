@@ -214,3 +214,34 @@ func TestFlakeProbabilityReplays(t *testing.T) {
 		t.Fatalf("a probability of 0.3 never fired: %s", first)
 	}
 }
+
+// A rule whose Times is spent must not stop a broader rule from firing. The
+// first version returned on the first matching rule, so an exhausted narrow
+// rule silently disabled every rule after it.
+func TestASpentRuleDoesNotShadowLaterOnes(t *testing.T) {
+	state := newState(42)
+	state.SetFailure(FailureRule{Route: "/classic/*", Status: 503, Times: 1})
+	state.SetFailure(FailureRule{Route: "*", Status: 500})
+
+	if status, _, fail := state.FailureFor("/classic/page"); !fail || status != 503 {
+		t.Fatalf("first call: status %d fail %v, want 503 true", status, fail)
+	}
+	if status, _, fail := state.FailureFor("/classic/page"); !fail || status != 500 {
+		t.Fatalf("second call should fall through to the catch-all: status %d fail %v", status, fail)
+	}
+}
+
+// Latency is the opposite: a request has one delay, so the first matching
+// rule wins outright rather than composing with the ones after it.
+func TestLatencyTakesTheFirstMatchOnly(t *testing.T) {
+	state := newState(42)
+	state.SetLatency(LatencyRule{Route: "/slow/*", Ms: 100})
+	state.SetLatency(LatencyRule{Route: "*", Ms: 900})
+
+	if got := state.LatencyFor("/slow/thing"); got != 100 {
+		t.Fatalf("latency %d ms, want 100 -- delays must not accumulate", got)
+	}
+	if got := state.LatencyFor("/other"); got != 900 {
+		t.Fatalf("latency %d ms, want 900", got)
+	}
+}

@@ -17,6 +17,7 @@ import (
 	"github.com/go-chi/chi/v5/middleware"
 
 	"github.com/heyrmi/testground/internal/challenge"
+	"github.com/heyrmi/testground/internal/control"
 	"github.com/heyrmi/testground/internal/render"
 	"github.com/heyrmi/testground/internal/session"
 )
@@ -96,7 +97,12 @@ func (s *Server) routes() chi.Router {
 	r.Get("/api/version", s.handleVersion)
 
 	r.Group(func(r chi.Router) {
-		r.Use(s.opts.Sessions.Middleware)
+		// Order matters: sessions first because everything below needs one,
+		// then the control plane's rules, which are session-scoped and which
+		// deliberately do not apply to the control plane itself.
+		r.Use(s.opts.Sessions.Middleware, control.Middleware)
+
+		r.Mount(control.Prefix, control.Routes(s.opts.Sessions))
 
 		r.Get("/", s.handleIndex)
 		r.Get("/api/challenges", s.handleManifest)

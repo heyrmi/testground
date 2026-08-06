@@ -160,6 +160,11 @@ func (s *State) LatencyFor(path string) (ms int) {
 
 // FailureFor reports whether a request for path should be refused, and with
 // what. The decision is recorded, so Times counts down and Rate replays.
+//
+// Rules are considered in the order they were added and the first one that
+// decides to fail wins. A rule that declines -- because its Times is spent or
+// its Rate did not come up -- does not shadow the rules after it, which is
+// what stops an exhausted narrow rule from silently disabling a broader one.
 func (s *State) FailureFor(path string) (status int, message string, fail bool) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
@@ -173,11 +178,11 @@ func (s *State) FailureFor(path string) (status int, message string, fail bool) 
 		switch {
 		case rule.Times > 0:
 			if rule.Fired >= rule.Times {
-				return 0, "", false
+				continue
 			}
 		case rule.Rate > 0:
 			if s.drawFloatLocked("failure:"+rule.Route) >= rule.Rate {
-				return 0, "", false
+				continue
 			}
 		}
 
