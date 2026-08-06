@@ -76,10 +76,11 @@ your tooling rather than one framework's happy path.
 | Hypermedia | `/hx` | htmx 2, Alpine.js | later |
 | Realtime | `/live` | WebSocket, SSE | later |
 
-## Challenges in v0.2.0
+## Challenges in v0.3.0
 
-Twenty-two pages covering 88 distinct concepts, with 184 documented selectors
-and 26 endpoints. Every one of them is in the manifest.
+Twenty-four pages covering 96 distinct concepts, with 199 documented selectors.
+Every one of them is in the manifest, and every one can be made slow, broken
+or flaky through the control plane.
 
 **Classic — `/classic`, no JavaScript at all**
 
@@ -116,6 +117,8 @@ and 26 endpoints. Every one of them is in the manifest.
 | Toast that appears and then removes itself | T2 | Portals, transient elements, one testid matching many |
 | Ten thousand rows, twenty in the DOM | T3 | Virtualisation and inner scroll containers |
 | Optimistic update that reverts | T3 | A green test against a value the server discards |
+| An endpoint that fails until it does not | T3 | Retry policy versus feature, and what retries hide |
+| Responses that arrive in the wrong order | T3 | A quiet network is not a finished page |
 | Three nested shadow roots | T3 | Shadow traversal, slots, composed events |
 
 Every page ships with a description of what it does, why it breaks naive
