@@ -128,7 +128,7 @@ func zones(renderer *render.Renderer, crossOriginPort string) []server.Zone {
 			Prefix: "/classic",
 			Pages:  classic.Pages(renderer, classic.Options{CrossOriginPort: crossOriginPort}),
 		},
-		{ID: challenge.ZoneLegacy, Prefix: "/legacy", Pages: legacy.Pages(renderer)},
+		{ID: challenge.ZoneLegacy, Prefix: "/legacy", Pages: legacy.Pages(renderer), API: legacy.API()},
 		{ID: challenge.ZoneApp, Prefix: "/app", Pages: app.Pages(dist), API: app.API()},
 		{ID: challenge.ZoneComponents, Prefix: "/wc", Pages: wc.Pages(renderer)},
 	}

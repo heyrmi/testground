@@ -1,0 +1,75 @@
+{{define "layout"}}{{template "layout-legacy" .}}{{end}}
+
+{{define "content" -}}
+{{template "legacy-header" .}}
+{{template "legacy-panel" .}}
+
+<div class="panel panel-default">
+  <div class="panel-body">
+    <div class="form-group">
+      <label for="q">Search names</label>
+      <input id="q" type="search" class="form-control" autocomplete="off"
+             placeholder="try: an, ov, ta" data-testid="search-input">
+      <p class="help-block">
+        The request goes 300 ms after you stop typing, not on every keystroke.
+      </p>
+    </div>
+
+    <dl class="dl-horizontal">
+      <dt>Matches</dt><dd><span data-testid="search-count">0</span>
+          (<span data-testid="search-shown">0</span> shown)</dd>
+      <dt>Requests sent</dt><dd><span data-testid="request-count">0</span></dd>
+    </dl>
+
+    <div id="results" data-testid="search-results">
+      <p class="text-muted" data-testid="search-empty">Nothing searched for yet.</p>
+    </div>
+  </div>
+</div>
+{{- end}}
+
+{{define "scripts" -}}
+<script>
+  jQuery(function ($) {
+    var timer = null;
+    var requests = 0;
+
+    function render(body) {
+      var $results = $('#results').empty();
+
+      if (!body.matches.length) {
+        $results.append($('<p class="text-muted">').attr('data-testid', 'search-empty')
+          .text('No names match "' + body.query + '".'));
+      } else {
+        var $table = $('<table class="table table-condensed">').appendTo($results);
+        var $body = $('<tbody>').appendTo($table);
+        $.each(body.matches, function (_, row) {
+          $('<tr>').attr('data-testid', 'search-row')
+            .append($('<td>').text(row.name))
+            .append($('<td class="text-muted">').text(row.email))
+            .append($('<td>').text(row.status))
+            .appendTo($body);
+        });
+      }
+
+      $('[data-testid="search-count"]').text(body.total);
+      $('[data-testid="search-shown"]').text(body.shown);
+    }
+
+    $('[data-testid="search-input"]').on('input', function () {
+      var value = $(this).val();
+      window.clearTimeout(timer);
+
+      timer = window.setTimeout(function () {
+        // The whole results container is thrown away and rebuilt, which is
+        // what detaches every row a test was holding.
+        $('#results').html('<p class="text-muted" data-testid="search-spinner">Searching…</p>');
+        requests += 1;
+        $('[data-testid="request-count"]').text(requests);
+
+        $.getJSON('/api/legacy/search', { q: value }, render);
+      }, 300);
+    });
+  });
+</script>
+{{- end}}

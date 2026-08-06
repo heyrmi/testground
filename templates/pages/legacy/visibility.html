@@ -1,0 +1,88 @@
+{{define "layout"}}{{template "layout-legacy" .}}{{end}}
+
+{{define "head" -}}
+<style>
+  .rig { position: relative; padding: 1em 0; }
+  .rig .btn { margin: 0 .4em .4em 0; }
+  .is-display-none    { display: none; }
+  .is-visibility-hidden { visibility: hidden; }
+  .is-opacity-zero    { opacity: 0; }
+  .is-zero-size       { width: 0; height: 0; padding: 0; border: 0; overflow: hidden; }
+  .is-offscreen       { position: absolute; left: -9999px; }
+
+  .covered-wrap { position: relative; display: inline-block; }
+  .covered-wrap .overlay {
+    position: absolute; inset: -6px; z-index: 10;
+    background: rgba(0, 0, 0, 0); cursor: not-allowed;
+  }
+
+  .fading {
+    opacity: 0;
+    transform: translateY(18px);
+    transition: opacity 1s linear, transform 1s linear;
+  }
+  .fading.shown { opacity: 1; transform: none; }
+</style>
+{{- end}}
+
+{{define "content" -}}
+{{template "legacy-header" .}}
+{{template "legacy-panel" .}}
+
+<div class="panel panel-default">
+  <div class="panel-body">
+    <div class="rig">
+      <button class="btn btn-primary" data-testid="btn-normal" data-name="normal">Normal</button>
+      <button class="btn btn-default is-display-none" data-testid="btn-display-none" data-name="display-none">display:none</button>
+      <button class="btn btn-default is-visibility-hidden" data-testid="btn-visibility-hidden" data-name="visibility-hidden">visibility:hidden</button>
+      <button class="btn btn-default is-opacity-zero" data-testid="btn-opacity-zero" data-name="opacity-zero">opacity:0</button>
+      <button class="btn btn-default is-zero-size" data-testid="btn-zero-size" data-name="zero-size">zero size</button>
+      <button class="btn btn-default is-offscreen" data-testid="btn-offscreen" data-name="offscreen">off screen</button>
+
+      <span class="covered-wrap">
+        <button class="btn btn-default" data-testid="btn-covered" data-name="covered">covered</button>
+        <span class="overlay" data-testid="overlay"></span>
+      </span>
+    </div>
+
+    <hr>
+
+    <p>
+      <button class="btn btn-warning" data-testid="reveal">Reveal the fading button</button>
+      <button class="btn btn-default fading" data-testid="btn-fading" data-name="fading">Fades in over a second</button>
+    </p>
+
+    <hr>
+
+    <dl class="dl-horizontal">
+      <dt>Clicks recorded</dt>
+      <dd><span data-testid="clicked">none</span></dd>
+    </dl>
+
+    <p class="text-muted">
+      Only a click that actually reaches a button appears above. Six of these will let a
+      locator find them; fewer will let a click through.
+    </p>
+  </div>
+</div>
+{{- end}}
+
+{{define "scripts" -}}
+<script>
+  jQuery(function ($) {
+    var recorded = [];
+
+    $('.rig button, [data-testid="btn-fading"]').on('click', function () {
+      var name = $(this).data('name');
+      if (recorded.indexOf(name) === -1) {
+        recorded.push(name);
+        $('[data-testid="clicked"]').text(recorded.join(', '));
+      }
+    });
+
+    $('[data-testid="reveal"]').on('click', function () {
+      $('[data-testid="btn-fading"]').addClass('shown');
+    });
+  });
+</script>
+{{- end}}

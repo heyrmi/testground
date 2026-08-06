@@ -26,6 +26,8 @@ func pages() []page {
 	return []page{
 		nativeDialogs(),
 		windows(),
+		visibility(),
+		ajaxSearch(),
 	}
 }
 
