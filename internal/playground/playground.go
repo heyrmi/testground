@@ -14,6 +14,7 @@ import (
 	"github.com/heyrmi/testground/internal/server"
 	"github.com/heyrmi/testground/internal/session"
 	"github.com/heyrmi/testground/internal/zones/app"
+	"github.com/heyrmi/testground/internal/zones/classic"
 	"github.com/heyrmi/testground/internal/zones/wc"
 )
 
@@ -30,6 +31,7 @@ type Config struct {
 func Registry() (*challenge.Registry, error) {
 	return challenge.NewRegistry(
 		app.Challenges(),
+		classic.Challenges(),
 		wc.Challenges(),
 	)
 }
@@ -38,6 +40,7 @@ func Registry() (*challenge.Registry, error) {
 func zones(renderer *render.Renderer) []server.Zone {
 	dist := testground.AppDist()
 	return []server.Zone{
+		{ID: challenge.ZoneClassic, Prefix: "/classic", Pages: classic.Pages(renderer)},
 		{ID: challenge.ZoneApp, Prefix: "/app", Pages: app.Pages(dist), API: app.API()},
 		{ID: challenge.ZoneComponents, Prefix: "/wc", Pages: wc.Pages(renderer)},
 	}

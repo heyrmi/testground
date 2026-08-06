@@ -433,3 +433,155 @@ button.primary {
     transition-duration: 0.01ms !important;
   }
 }
+
+/* Forms -------------------------------------------------------------------
+   The server-rendered zones use plain HTML controls, so these are element
+   selectors rather than classes. Zone 2 overrides them with Bootstrap. */
+
+.stack {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.fields {
+  display: grid;
+  gap: 1rem 1.5rem;
+  grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.field label,
+.field legend {
+  font-size: 0.8125rem;
+  font-weight: 550;
+  color: var(--muted);
+}
+
+.field__note {
+  margin: 0.1rem 0 0;
+  font-size: 0.8125rem;
+  color: var(--muted);
+}
+
+input,
+select,
+textarea {
+  font: inherit;
+  font-size: 0.9375rem;
+  padding: 0.42rem 0.6rem;
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  background: var(--bg);
+  color: var(--text);
+  max-width: 100%;
+}
+
+input[type='checkbox'],
+input[type='radio'] {
+  width: auto;
+  margin: 0 0.45rem 0 0;
+  accent-color: var(--accent);
+}
+
+input[type='range'] {
+  padding: 0;
+  border: 0;
+  background: none;
+  accent-color: var(--accent);
+}
+
+input[type='color'] {
+  padding: 0.15rem;
+  height: 2.2rem;
+  width: 4rem;
+}
+
+textarea {
+  resize: vertical;
+}
+
+input:disabled,
+select:disabled,
+textarea:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+input[readonly] {
+  background: var(--surface-sunken);
+}
+
+fieldset {
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 0.9rem 1.1rem 1.1rem;
+  margin: 0;
+}
+
+legend {
+  padding: 0 0.4rem;
+  font-size: 0.8125rem;
+  font-weight: 550;
+  color: var(--muted);
+}
+
+.choice {
+  display: flex;
+  align-items: center;
+  gap: 0.1rem;
+  font-size: 0.9375rem;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  align-items: center;
+}
+
+/* Results ----------------------------------------------------------------- */
+
+.stage__heading {
+  margin: 2rem 0 0.75rem;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+}
+
+.results {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.875rem;
+}
+
+.results th {
+  text-align: left;
+  font-family: var(--mono);
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--accent);
+  padding: 0.35rem 1.2rem 0.35rem 0;
+  border-top: 1px solid var(--border);
+  white-space: nowrap;
+  vertical-align: top;
+  width: 1%;
+}
+
+.results td {
+  padding: 0.35rem 0;
+  border-top: 1px solid var(--border);
+  vertical-align: top;
+}
+
+.results td:empty::after {
+  content: '(empty)';
+  color: var(--muted);
+  font-style: italic;
+}

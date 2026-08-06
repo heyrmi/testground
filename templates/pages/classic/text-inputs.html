@@ -1,0 +1,73 @@
+{{define "content" -}}
+{{template "challenge-header" .}}
+{{template "challenge-panel" .}}
+
+<section class="stage">
+  <form method="post" action="/classic/text-inputs" class="stack" data-testid="form">
+    <div class="fields">
+      <div class="field">
+        <label for="text">Text</label>
+        <input id="text" name="text" type="text" data-testid="field-text" placeholder="anything at all">
+      </div>
+      <div class="field">
+        <label for="password">Password</label>
+        <input id="password" name="password" type="password" data-testid="field-password" autocomplete="off">
+      </div>
+      <div class="field">
+        <label for="email">Email</label>
+        <input id="email" name="email" type="email" data-testid="field-email" placeholder="name@example.test">
+      </div>
+      <div class="field">
+        <label for="number">Number</label>
+        <input id="number" name="number" type="number" min="0" max="100" step="5" data-testid="field-number">
+      </div>
+      <div class="field">
+        <label for="tel">Telephone</label>
+        <input id="tel" name="tel" type="tel" data-testid="field-tel" placeholder="+44 20 7946 0000">
+      </div>
+      <div class="field">
+        <label for="url">URL</label>
+        <input id="url" name="url" type="url" data-testid="field-url" placeholder="https://example.test">
+      </div>
+      <div class="field">
+        <label for="search">Search</label>
+        <input id="search" name="search" type="search" data-testid="field-search">
+      </div>
+    </div>
+
+    <div class="field">
+      <label for="comment">Comment</label>
+      <textarea id="comment" name="comment" rows="3" maxlength="200" data-testid="field-comment"></textarea>
+      <p class="field__note">Capped at 200 characters by <code>maxlength</code>, which the browser enforces on typing but not on paste in every engine.</p>
+    </div>
+
+    <div class="actions">
+      <button type="submit" class="primary" data-testid="submit">Submit</button>
+    </div>
+  </form>
+
+  {{with .Data.Latest}}
+  <h2 class="stage__heading">What the server received</h2>
+  <table class="results" data-testid="result">
+    <tbody>
+      <tr><th>text</th><td data-testid="result-text">{{.Text}}</td></tr>
+      <tr><th>password</th><td data-testid="result-password">{{.PasswordLength}} characters, not echoed</td></tr>
+      <tr><th>email</th><td data-testid="result-email">{{.Email}}</td></tr>
+      <tr><th>number</th><td data-testid="result-number">{{.Number}}</td></tr>
+      <tr><th>tel</th><td data-testid="result-tel">{{.Tel}}</td></tr>
+      <tr><th>url</th><td data-testid="result-url">{{.URL}}</td></tr>
+      <tr><th>search</th><td data-testid="result-search">{{.Search}}</td></tr>
+      <tr><th>comment</th><td data-testid="result-comment">{{.Comment}}</td></tr>
+    </tbody>
+  </table>
+  <p class="field__note">
+    Posted <b data-testid="submission-count">{{$.Data.Count}}</b> time(s) in this session.
+  </p>
+  <form method="post" action="/classic/text-inputs/clear" class="actions">
+    <button type="submit" data-testid="clear">Discard the submission</button>
+  </form>
+  {{else}}
+  <p class="empty" data-testid="no-submission">Nothing has been posted yet.</p>
+  {{end}}
+</section>
+{{- end}}
