@@ -1,0 +1,31 @@
+{{define "scripts" -}}
+<script type="module" src="/assets/wc.js"></script>
+{{- end}}
+
+{{define "content" -}}
+{{template "challenge-header" .}}
+{{template "challenge-panel" .}}
+
+<section class="stage">
+  <p class="stage__label">Light DOM &rarr; shadow root 1 &rarr; 2 &rarr; 3</p>
+
+  <pg-shadow-outer data-testid="shadow-host">
+    <span slot="label" data-testid="slotted-label">
+      This span is written in the page and projected into the outer shadow root through a named slot.
+    </span>
+  </pg-shadow-outer>
+
+  <table class="selectors" style="margin-top:1.5rem">
+    <tbody>
+      <tr>
+        <td>shadow-echo</td>
+        <td data-testid="shadow-echo">nothing has crossed yet</td>
+      </tr>
+      <tr>
+        <td>shadow-submit-count</td>
+        <td data-testid="shadow-submit-count">0</td>
+      </tr>
+    </tbody>
+  </table>
+</section>
+{{- end}}

@@ -31,6 +31,12 @@ type View struct {
 	Seed    uint64
 }
 
+// ZoneView is the data a zone index page renders from.
+type ZoneView struct {
+	Zone       challenge.ZoneInfo
+	Challenges []challenge.Challenge
+}
+
 // Renderer holds the parsed template sets. It is read-only after New.
 type Renderer struct {
 	pages   map[string]*template.Template

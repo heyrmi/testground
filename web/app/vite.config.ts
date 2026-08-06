@@ -17,6 +17,7 @@ export default defineConfig({
     rollupOptions: {
       input: {
         app: resolve(import.meta.dirname, 'index.html'),
+        wc: resolve(import.meta.dirname, 'src/wc/main.ts'),
       },
       output: {
         entryFileNames: 'assets/[name].js',

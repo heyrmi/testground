@@ -14,6 +14,7 @@ import (
 	"github.com/heyrmi/testground/internal/server"
 	"github.com/heyrmi/testground/internal/session"
 	"github.com/heyrmi/testground/internal/zones/app"
+	"github.com/heyrmi/testground/internal/zones/wc"
 )
 
 // Config is everything the operator can choose at startup.
@@ -29,14 +30,16 @@ type Config struct {
 func Registry() (*challenge.Registry, error) {
 	return challenge.NewRegistry(
 		app.Challenges(),
+		wc.Challenges(),
 	)
 }
 
 // zones lists every frontend the server mounts.
-func zones() []server.Zone {
+func zones(renderer *render.Renderer) []server.Zone {
 	dist := testground.AppDist()
 	return []server.Zone{
 		{ID: challenge.ZoneApp, Prefix: "/app", Pages: app.Pages(dist), API: app.API()},
+		{ID: challenge.ZoneComponents, Prefix: "/wc", Pages: wc.Pages(renderer)},
 	}
 }
 
@@ -58,7 +61,7 @@ func New(cfg Config) (*server.Server, error) {
 		Renderer: renderer,
 		Static:   testground.Static(),
 		Assets:   testground.AppDist(),
-		Zones:    zones(),
+		Zones:    zones(renderer),
 		Version:  cfg.Version,
 		Logger:   cfg.Logger,
 	})

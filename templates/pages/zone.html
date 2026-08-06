@@ -1,0 +1,24 @@
+{{define "content" -}}
+<section class="intro">
+  <h1>{{.Data.Zone.Title}}</h1>
+  <p>{{.Data.Zone.Technology}} — {{.Data.Zone.Tests}}</p>
+</section>
+
+{{if .Data.Challenges}}
+<div class="cards">
+  {{range .Data.Challenges}}
+  <a class="card" href="{{.URL}}" data-testid="challenge-card-{{.ID}}">
+    <div class="badges">
+      <span class="badge badge--{{lower .Tier}}">{{.Tier}}</span>
+      <span class="tag">{{.Category}}</span>
+    </div>
+    <div class="card__title">{{.Title}}</div>
+    <p class="card__summary">{{.Summary}}</p>
+    <div class="card__url">{{.URL}}</div>
+  </a>
+  {{end}}
+</div>
+{{else}}
+<p class="empty" data-testid="no-challenges">This build ships no challenges in this zone.</p>
+{{end}}
+{{- end}}
