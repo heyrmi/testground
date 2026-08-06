@@ -1,0 +1,44 @@
+{{define "scripts" -}}
+<script type="module" src="/assets/live.js"></script>
+{{- end}}
+
+{{define "content" -}}
+{{template "challenge-header" .}}
+{{template "challenge-panel" .}}
+
+<section class="stage">
+  <h2 class="stage__heading">Echo — a round trip, so two events</h2>
+  <div class="actions">
+    <button data-testid="echo-connect" class="primary">Connect</button>
+    <input type="text" value="hello" data-testid="echo-input">
+    <button data-testid="echo-send">Send</button>
+  </div>
+  <table class="results">
+    <tbody>
+      <tr><th>state</th><td data-testid="echo-state">closed</td></tr>
+      <tr><th>last reply</th><td data-testid="echo-last">nothing yet</td></tr>
+      <tr><th>replies</th><td data-testid="echo-count">0</td></tr>
+    </tbody>
+  </table>
+
+  <h2 class="stage__heading">Ticker — nothing you did causes the next message</h2>
+  <div class="actions">
+    <button data-testid="ticker-connect" class="primary">Connect</button>
+    <button data-testid="ticker-stop">Disconnect</button>
+  </div>
+  <table class="results">
+    <tbody>
+      <tr><th>state</th><td data-testid="ticker-state">closed</td></tr>
+      <tr><th>messages</th><td data-testid="ticker-count">0</td></tr>
+      <tr><th>last sequence</th><td data-testid="ticker-last-seq">0</td></tr>
+    </tbody>
+  </table>
+  <p class="field__note">
+    Add <code>?ms=</code> to change the interval and <code>?count=</code> to make it stop.
+    Waiting for the count to reach a number settles on its own; sleeping does not.
+  </p>
+
+  <h2 class="stage__heading">Log</h2>
+  <ul class="linklist" data-testid="message-log"></ul>
+</section>
+{{- end}}

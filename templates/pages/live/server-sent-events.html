@@ -1,0 +1,46 @@
+{{define "scripts" -}}
+<script type="module" src="/assets/live.js"></script>
+{{- end}}
+
+{{define "content" -}}
+{{template "challenge-header" .}}
+{{template "challenge-panel" .}}
+
+<section class="stage">
+  <h2 class="stage__heading">A stream that ends</h2>
+  <div class="actions"><button data-testid="events-start" class="primary">Start</button></div>
+  <table class="results">
+    <tbody>
+      <tr><th>state</th><td data-testid="events-state">idle</td></tr>
+      <tr><th>updates</th><td data-testid="events-count">0</td></tr>
+    </tbody>
+  </table>
+
+  <h2 class="stage__heading">A stream that stalls</h2>
+  <div class="actions"><button data-testid="stall-start" class="primary">Start</button></div>
+  <table class="results">
+    <tbody>
+      <tr><th>state</th><td data-testid="stall-state">idle</td></tr>
+      <tr><th>updates</th><td data-testid="stall-count">0</td></tr>
+    </tbody>
+  </table>
+  <p class="field__note">
+    This one stops at three and stays open. It has not failed and it has not finished, and it
+    never will — so its state stays <code>streaming</code> forever.
+  </p>
+
+  <h2 class="stage__heading">A stream that writes</h2>
+  <div class="actions"><button data-testid="stream-start" class="primary">Start</button></div>
+  <table class="results">
+    <tbody>
+      <tr><th>state</th><td data-testid="stream-state">idle</td></tr>
+      <tr><th>tokens</th><td data-testid="stream-tokens">0</td></tr>
+    </tbody>
+  </table>
+  <p data-testid="stream-text" style="margin-top:1rem"></p>
+  <p class="field__note">
+    Every intermediate state here is a sentence that reads correctly. Only the one after the
+    last token is the whole thing.
+  </p>
+</section>
+{{- end}}

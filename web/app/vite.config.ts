@@ -18,6 +18,7 @@ export default defineConfig({
       input: {
         app: resolve(import.meta.dirname, 'index.html'),
         wc: resolve(import.meta.dirname, 'src/wc/main.ts'),
+        live: resolve(import.meta.dirname, 'src/live/main.ts'),
       },
       output: {
         entryFileNames: 'assets/[name].js',

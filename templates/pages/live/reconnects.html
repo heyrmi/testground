@@ -1,0 +1,40 @@
+{{define "scripts" -}}
+<script type="module" src="/assets/live.js"></script>
+{{- end}}
+
+{{define "content" -}}
+{{template "challenge-header" .}}
+{{template "challenge-panel" .}}
+
+<section class="stage">
+  <h2 class="stage__heading">A connection that will be dropped</h2>
+  <div class="actions">
+    <button data-testid="flaky-connect" class="primary">Connect and keep reconnecting</button>
+    <button data-testid="flaky-stop">Stop trying</button>
+  </div>
+  <table class="results">
+    <tbody>
+      <tr><th>state</th><td data-testid="flaky-state">closed</td></tr>
+      <tr><th>drops</th><td data-testid="flaky-drops">0</td></tr>
+      <tr><th>generation</th><td data-testid="flaky-generation">0</td></tr>
+      <tr><th>messages</th><td data-testid="flaky-count">0</td></tr>
+    </tbody>
+  </table>
+  <p class="field__note">
+    The messages on screen do not change when the socket dies. The state and the generation do,
+    which is why they are published separately.
+  </p>
+
+  <h2 class="stage__heading">Numbered messages, delivered out of order</h2>
+  <div class="actions">
+    <button data-testid="shuffled-connect" class="primary">Receive them</button>
+  </div>
+  <table class="results">
+    <tbody>
+      <tr><th>arrival order</th><td data-testid="arrival-order">nothing yet</td></tr>
+      <tr><th>sorted by sequence</th><td data-testid="sorted-order">nothing yet</td></tr>
+    </tbody>
+  </table>
+  <div data-testid="shuffled-outcome"></div>
+</section>
+{{- end}}

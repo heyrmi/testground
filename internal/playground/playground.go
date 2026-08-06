@@ -19,6 +19,7 @@ import (
 	"github.com/heyrmi/testground/internal/zones/app"
 	"github.com/heyrmi/testground/internal/zones/classic"
 	"github.com/heyrmi/testground/internal/zones/legacy"
+	"github.com/heyrmi/testground/internal/zones/live"
 	"github.com/heyrmi/testground/internal/zones/wc"
 )
 
@@ -52,6 +53,7 @@ func Registry(cfg Config) (*challenge.Registry, error) {
 		app.Challenges(),
 		classic.Challenges(classic.Options{CrossOriginPort: port}),
 		legacy.Challenges(),
+		live.Challenges(),
 		wc.Challenges(),
 	)
 }
@@ -131,6 +133,7 @@ func zones(renderer *render.Renderer, crossOriginPort string) []server.Zone {
 		{ID: challenge.ZoneLegacy, Prefix: "/legacy", Pages: legacy.Pages(renderer), API: legacy.API()},
 		{ID: challenge.ZoneApp, Prefix: "/app", Pages: app.Pages(dist), API: app.API()},
 		{ID: challenge.ZoneComponents, Prefix: "/wc", Pages: wc.Pages(renderer)},
+		{ID: challenge.ZoneRealtime, Prefix: "/live", Pages: live.Pages(renderer), API: live.API()},
 	}
 }
 
