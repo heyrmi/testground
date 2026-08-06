@@ -64,20 +64,52 @@ your tooling rather than one framework's happy path.
 |---|---|---|---|
 | Modern SPA | `/app` | React 19, TypeScript, Tailwind | shipping |
 | Components | `/wc` | Lit web components | shipping |
-| Classic | `/classic` | Go templates, no JavaScript | Phase 1 |
-| Legacy | `/legacy` | jQuery 3, Bootstrap 3 | Phase 1 |
-| Hypermedia | `/hx` | htmx 2, Alpine.js | Phase 1 |
-| Realtime | `/live` | WebSocket, SSE | Phase 5 |
+| Classic | `/classic` | Go templates, no JavaScript | shipping |
+| Legacy | `/legacy` | jQuery 3.7, Bootstrap 3.4 | shipping |
+| Hypermedia | `/hx` | htmx 2, Alpine.js | later |
+| Realtime | `/live` | WebSocket, SSE | later |
 
-## Challenges in v0.1.0
+## Challenges in v0.2.0
+
+Twenty-two pages covering 88 distinct concepts, with 184 documented selectors
+and 26 endpoints. Every one of them is in the manifest.
+
+**Classic — `/classic`, no JavaScript at all**
 
 | Challenge | Tier | Teaches |
 |---|---|---|
-| Element that appears after a delay<br>`/app/delayed-element` | T1 | Waiting for a condition instead of sleeping for a guess |
-| Toast that appears and then removes itself<br>`/app/toast` | T2 | Portals, transient elements, one test id matching many nodes |
-| Ten thousand rows, twenty in the DOM<br>`/app/virtual-list` | T3 | Virtualisation, inner scroll containers, element detachment |
-| Optimistic update that reverts<br>`/app/optimistic-revert` | T3 | Settling a write before believing the DOM |
-| Three nested shadow roots<br>`/wc/nested-shadow` | T3 | Shadow traversal, slots, composed events |
+| Text inputs and a full page reload | T1 | Element handles go stale across a reload; locators don't |
+| Checkboxes, radios and selects | T1 | Repeated field names, multi-select APIs, disabled options |
+| Six things that look like buttons | T1 | Only three post anything — role over appearance |
+| Sliders, colours and native date inputs | T2 | Controls with nothing to type into; an unreachable native dialog |
+| Readonly, disabled and aria-disabled | T2 | Three identical-looking states, three different behaviours |
+| Redirect chains, status codes and meta refresh | T2 | 307 keeps your POST method; 303 does not |
+| Error pages that are still pages | T2 | Every content assertion passes on a 500 |
+| Slow to answer, and never finished | T2 | Document ready versus load, and why the default hangs |
+| File uploads and the rules that are not enforced | T2 | `accept` stops nothing; size limits fail after transfer |
+| Downloads and dispositions | T2 | A download is not a navigation |
+| Same-origin, cross-origin and nested frames | T3 | Page script is blocked where your framework is not |
+
+**Legacy — `/legacy`, jQuery and Bootstrap 3**
+
+| Challenge | Tier | Teaches |
+|---|---|---|
+| alert, confirm, prompt and the ones that stack | T2 | Dialogs are not DOM; register the handler first |
+| The dialog element, modal and not | T2 | Visible and enabled is still not clickable |
+| New tabs, popups and one that writes back | T2 | A new tab is a context your locators can't see |
+| pushState, replaceState and the back button | T2 | URL changes with no request and no load event |
+| Debounced search that replaces its own results | T2 | Waiting for a state, not a duration |
+| Six ways to be invisible | T3 | `opacity: 0` is invisible and fully clickable |
+
+**Modern SPA — `/app`, React 19** · **Components — `/wc`, Lit**
+
+| Challenge | Tier | Teaches |
+|---|---|---|
+| Element that appears after a delay | T1 | Wait for a condition, not a guessed duration |
+| Toast that appears and then removes itself | T2 | Portals, transient elements, one testid matching many |
+| Ten thousand rows, twenty in the DOM | T3 | Virtualisation and inner scroll containers |
+| Optimistic update that reverts | T3 | A green test against a value the server discards |
+| Three nested shadow roots | T3 | Shadow traversal, slots, composed events |
 
 Every page ships with a description of what it does, why it breaks naive
 automation, the selectors worth locating, and a hint disclosure with the
@@ -135,12 +167,9 @@ committed so `go install` produces a working binary; rebuild it with
 
 ## Roadmap
 
-v0.1.0 is the walking skeleton: the architecture proven end to end with five
-challenges. What follows, in order:
+v0.2.0 covers the ground the-internet and UI Testing Playground cover, on your
+own machine and with a stability contract. What follows, in order:
 
-- **v0.2.0** — Classic, Legacy and Hypermedia zones. Basic controls, frames,
-  native dialogs, windows and tabs, file upload and download. Roughly forty
-  challenges.
 - **v0.3.0** — the control plane. Reset, reseed, latency injection, failure
   rates, flake probability, clock manipulation. The point at which this
   becomes usable in real CI.
