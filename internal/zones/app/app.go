@@ -26,6 +26,7 @@ func Challenges() []challenge.Challenge {
 		fakeControls(),
 		detachedElements(),
 		modalPortal(),
+		dataTable(),
 	}
 }
 
@@ -59,6 +60,7 @@ func API() http.Handler {
 	r.Post("/retries/reset", handleRetriesReset)
 	r.Get("/races/search", handleRacesEcho)
 	r.Get("/races/step", handleRacesEcho)
+	r.Get("/table/rows", handleTableRows)
 	return r
 }
 
