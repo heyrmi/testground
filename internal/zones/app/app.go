@@ -20,6 +20,8 @@ func Challenges() []challenge.Challenge {
 		toast(),
 		virtualList(),
 		optimisticRevert(),
+		retries(),
+		races(),
 	}
 }
 
@@ -49,6 +51,10 @@ func API() http.Handler {
 	r.Get("/virtual-list/rows", handleVirtualListRows)
 	r.Get("/optimistic-revert/tasks", handleOptimisticTasks)
 	r.Post("/optimistic-revert/tasks/{id}/toggle", handleOptimisticToggle)
+	r.Get("/retries/data", handleRetriesData)
+	r.Post("/retries/reset", handleRetriesReset)
+	r.Get("/races/search", handleRacesEcho)
+	r.Get("/races/step", handleRacesEcho)
 	return r
 }
 

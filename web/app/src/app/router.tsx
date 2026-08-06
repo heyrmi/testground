@@ -3,6 +3,8 @@ import { indexRoute, rootRoute } from './root'
 import { route as delayedElementRoute } from './challenges/delayed-element'
 import { route as toastRoute } from './challenges/toast'
 import { route as optimisticRevertRoute } from './challenges/optimistic-revert'
+import { route as racesRoute } from './challenges/request-races'
+import { route as retriesRoute } from './challenges/retries'
 import { route as virtualListRoute } from './challenges/virtual-list'
 
 const routeTree = rootRoute.addChildren([
@@ -11,6 +13,8 @@ const routeTree = rootRoute.addChildren([
   toastRoute,
   virtualListRoute,
   optimisticRevertRoute,
+  retriesRoute,
+  racesRoute,
 ])
 
 export const router = createRouter({
