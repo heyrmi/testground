@@ -1,8 +1,9 @@
 import { createRouter } from '@tanstack/react-router'
 import { indexRoute, rootRoute } from './root'
 import { route as delayedElementRoute } from './challenges/delayed-element'
+import { route as toastRoute } from './challenges/toast'
 
-const routeTree = rootRoute.addChildren([indexRoute, delayedElementRoute])
+const routeTree = rootRoute.addChildren([indexRoute, delayedElementRoute, toastRoute])
 
 export const router = createRouter({
   routeTree,
