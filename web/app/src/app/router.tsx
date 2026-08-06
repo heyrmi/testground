@@ -4,6 +4,8 @@ import { route as delayedElementRoute } from './challenges/delayed-element'
 import { route as toastRoute } from './challenges/toast'
 import { route as optimisticRevertRoute } from './challenges/optimistic-revert'
 import { route as dataTableRoute } from './challenges/data-table'
+import { route as dragAndDropRoute } from './challenges/drag-and-drop'
+import { route as pointerMenusRoute } from './challenges/pointer-menus'
 import { route as detachedRoute } from './challenges/detached-elements'
 import { route as fakeControlsRoute } from './challenges/fake-controls'
 import { route as modalPortalRoute } from './challenges/modal-portal'
@@ -25,6 +27,8 @@ const routeTree = rootRoute.addChildren([
   detachedRoute,
   modalPortalRoute,
   dataTableRoute,
+  dragAndDropRoute,
+  pointerMenusRoute,
 ])
 
 export const router = createRouter({

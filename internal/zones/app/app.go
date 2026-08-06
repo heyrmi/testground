@@ -27,6 +27,8 @@ func Challenges() []challenge.Challenge {
 		detachedElements(),
 		modalPortal(),
 		dataTable(),
+		dragAndDrop(),
+		pointerMenus(),
 	}
 }
 
