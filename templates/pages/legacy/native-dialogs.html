@@ -1,0 +1,78 @@
+{{define "layout"}}{{template "layout-legacy" .}}{{end}}
+
+{{define "content" -}}
+{{template "legacy-header" .}}
+{{template "legacy-panel" .}}
+
+<div class="panel panel-default">
+  <div class="panel-body">
+    <div class="btn-toolbar" role="toolbar">
+      <button class="btn btn-primary" id="fire-alert" data-testid="fire-alert">alert</button>
+      <button class="btn btn-default" id="fire-confirm" data-testid="fire-confirm">confirm</button>
+      <button class="btn btn-default" id="fire-prompt" data-testid="fire-prompt">prompt</button>
+      <button class="btn btn-default" id="fire-chain" data-testid="fire-chain">alert then confirm</button>
+      <button class="btn btn-warning" id="fire-delayed" data-testid="fire-delayed">alert in two seconds</button>
+    </div>
+
+    <hr>
+
+    <dl class="dl-horizontal">
+      <dt>Last result</dt>
+      <dd><span data-testid="dialog-result">nothing yet</span></dd>
+      <dt>Dialogs answered</dt>
+      <dd><span data-testid="dialog-count">0</span></dd>
+    </dl>
+
+    <p class="text-muted">
+      <a href="/legacy" id="leave-link" data-testid="leave-link">Leave this page</a> —
+      the browser will ask you to confirm, because a beforeunload handler is registered.
+    </p>
+  </div>
+</div>
+{{- end}}
+
+{{define "scripts" -}}
+<script>
+  jQuery(function ($) {
+    var answered = 0;
+
+    function record(text) {
+      answered += 1;
+      $('[data-testid="dialog-result"]').text(text);
+      $('[data-testid="dialog-count"]').text(answered);
+    }
+
+    $('#fire-alert').on('click', function () {
+      window.alert('A plain alert. There is nothing here to locate.');
+      record('alert acknowledged');
+    });
+
+    $('#fire-confirm').on('click', function () {
+      // Whichever way this is answered, the page does something different and
+      // nothing in the DOM records which choice was made until now.
+      record(window.confirm('Delete everything?') ? 'confirm accepted' : 'confirm dismissed');
+    });
+
+    $('#fire-prompt').on('click', function () {
+      var typed = window.prompt('What should the label say?', 'default text');
+      record(typed === null ? 'prompt dismissed' : 'prompt returned: ' + typed);
+    });
+
+    $('#fire-chain').on('click', function () {
+      window.alert('First of two.');
+      record(window.confirm('And now the second. Accept it?') ? 'chain accepted' : 'chain dismissed');
+    });
+
+    $('#fire-delayed').on('click', function () {
+      window.setTimeout(function () {
+        window.alert('Two seconds later, when nothing was waiting for this.');
+        record('delayed alert acknowledged');
+      }, 2000);
+    });
+
+    $(window).on('beforeunload', function () {
+      return 'Really leave?';
+    });
+  });
+</script>
+{{- end}}

@@ -1,0 +1,52 @@
+{{define "layout"}}{{template "layout-legacy" .}}{{end}}
+
+{{define "content" -}}
+{{template "legacy-header" .}}
+{{template "legacy-panel" .}}
+
+<div class="panel panel-default">
+  <div class="panel-body">
+    <div class="btn-toolbar">
+      <a class="btn btn-primary" href="/legacy/windows/popup?kind=tab" target="_blank"
+         rel="opener" data-testid="blank-link">Open in a new tab</a>
+      <button class="btn btn-default" id="open-popup" data-testid="open-popup">window.open, 480×320</button>
+      <button class="btn btn-default" id="open-closing" data-testid="open-closing">Closes itself in 2s</button>
+      <button class="btn btn-default" id="open-writer" data-testid="open-writer">Writes back, then closes</button>
+    </div>
+
+    <hr>
+
+    <dl class="dl-horizontal">
+      <dt>From the popup</dt>
+      <dd><span data-testid="from-popup">nothing yet</span></dd>
+    </dl>
+
+    <p class="text-muted">
+      Every one of these creates a context your locators are not pointing at. The value above
+      is in <em>this</em> page, which is why it outlives the window that set it.
+    </p>
+  </div>
+</div>
+{{- end}}
+
+{{define "scripts" -}}
+<script>
+  jQuery(function ($) {
+    function open(kind, features) {
+      return window.open('/legacy/windows/popup?kind=' + kind, '_blank', features || '');
+    }
+
+    $('#open-popup').on('click', function () {
+      open('sized', 'width=480,height=320');
+    });
+
+    $('#open-closing').on('click', function () {
+      open('closing');
+    });
+
+    $('#open-writer').on('click', function () {
+      open('writer');
+    });
+  });
+</script>
+{{- end}}

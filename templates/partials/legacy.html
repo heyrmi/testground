@@ -1,0 +1,82 @@
+{{define "layout-legacy" -}}
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{{.Title}} · testground</title>
+  <link rel="icon" href="/static/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="/static/vendor/bootstrap/css/bootstrap.min.css">
+  <style>
+    /* Deliberately minimal. Zone 2 is meant to look like the era it came
+       from, so it wears Bootstrap 3 rather than the playground's own chrome. */
+    body { padding-bottom: 5rem; }
+    .navbar-brand b { font-weight: 700; }
+    .meta { font-family: monospace; font-size: 12px; }
+    pre.selectors { font-size: 12px; }
+  </style>
+  {{block "head" .}}{{end}}
+</head>
+<body>
+  <nav class="navbar navbar-default">
+    <div class="container">
+      <div class="navbar-header">
+        <a class="navbar-brand" href="/">test<b>ground</b></a>
+      </div>
+      <p class="navbar-text navbar-right meta">
+        version <b data-testid="meta-version">{{.Version}}</b> ·
+        seed <b data-testid="meta-seed">{{.Seed}}</b> ·
+        session <b data-testid="meta-session">{{.Session}}</b>
+      </p>
+    </div>
+  </nav>
+
+  <div class="container">
+    {{template "content" .}}
+  </div>
+
+  <script src="/static/vendor/jquery/jquery.min.js"></script>
+  <script src="/static/vendor/bootstrap/js/bootstrap.min.js"></script>
+  {{block "scripts" .}}{{end}}
+</body>
+</html>
+{{- end}}
+
+{{define "legacy-header" -}}
+<p><a href="/legacy" data-testid="back-to-zone">&larr; Legacy challenges</a></p>
+<div>
+  <span class="label label-default" data-testid="challenge-tier">{{.Challenge.Tier}}</span>
+  <span class="label label-default" data-testid="challenge-zone">{{.Challenge.Zone}}</span>
+  <span class="text-muted small">{{.Challenge.Category}}</span>
+</div>
+<h1 data-testid="challenge-title">{{.Challenge.Title}}</h1>
+{{- end}}
+
+{{define "legacy-panel" -}}
+<div class="panel panel-default" data-testid="challenge-panel">
+  <div class="panel-body">
+    <h4 class="text-muted small">WHAT THIS PAGE DOES</h4>
+    <p>{{.Challenge.Summary}}</p>
+
+    <h4 class="text-muted small">WHY IT BREAKS NAIVE AUTOMATION</h4>
+    <p>{{.Challenge.WhyHard}}</p>
+
+    {{if .Challenge.Selectors}}
+    <h4 class="text-muted small">ELEMENTS WORTH LOCATING</h4>
+    <table class="table table-condensed">
+      <thead><tr><th>data-testid</th><th>Role</th><th>What it is</th></tr></thead>
+      <tbody>
+        {{range .Challenge.Selectors}}
+        <tr><td><code>{{.TestID}}</code></td><td>{{if .Role}}{{.Role}}{{else}}—{{end}}</td><td class="text-muted">{{.Note}}</td></tr>
+        {{end}}
+      </tbody>
+    </table>
+    {{end}}
+
+    <details data-testid="challenge-hint">
+      <summary><b>Show hint</b></summary>
+      <p class="text-muted" style="margin-top:.7em">{{.Challenge.Hint}}</p>
+    </details>
+  </div>
+</div>
+{{- end}}
