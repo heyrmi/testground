@@ -32,7 +32,7 @@ func dragAndDrop() challenge.Challenge {
 		Concepts: []string{"HTML5 drag is not mouse movement", "dataTransfer", "pointer sequences need intermediate moves", "reordering by drop target"},
 		Selectors: []challenge.Selector{
 			{TestID: "parcel-source", Note: "Holds the parcels still to be moved"},
-			{TestID: "parcel", Transient: true, Note: "A draggable parcel; narrow by data-name"},
+			{TestID: "parcel", Note: "A draggable parcel; narrow by data-name. They leave as they are delivered"},
 			{TestID: "dropzone", Note: "Accepts parcels dropped on it"},
 			{TestID: "delivered", Transient: true, Note: "One per parcel that arrived"},
 			{TestID: "delivered-count", Note: "How many made it"},

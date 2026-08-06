@@ -14,6 +14,7 @@ import (
 func Challenges() []challenge.Challenge {
 	return []challenge.Challenge{
 		nestedShadow(),
+		closedShadow(),
 	}
 }
 

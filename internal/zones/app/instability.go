@@ -38,7 +38,7 @@ func detachedElements() challenge.Challenge {
 			{TestID: "vanishing", Role: "button", Transient: true, Note: "Removes itself after 600 ms"},
 			{TestID: "vanish-clicks", Note: "How many times it was caught in time"},
 			{TestID: "arm-unmount", Role: "button", Note: "Gives the field 800 ms to live"},
-			{TestID: "doomed-field", Role: "textbox", Transient: true, Note: "Unmounts while you are typing into it"},
+			{TestID: "doomed-field", Role: "textbox", Note: "Present until armed, then unmounts while you are typing into it"},
 			{TestID: "form-gone", Transient: true, Note: "Replaces the field once it has gone"},
 		},
 		Controls: []challenge.Control{

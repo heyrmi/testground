@@ -1,5 +1,8 @@
 import { LitElement, css, html, type TemplateResult } from 'lit'
 
+// The hostile tier lives in its own file but ships in the same bundle.
+import './closed'
+
 /**
  * Three open shadow roots, one inside the next. Lit attaches an open root by
  * default, so the tree is reachable — the point is that reaching it takes a

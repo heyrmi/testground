@@ -1,0 +1,43 @@
+{{define "scripts" -}}
+<script type="module" src="/assets/wc.js"></script>
+{{- end}}
+
+{{define "head" -}}
+<style>
+  /* The one hook the component chose to expose. Nothing else in it can be
+     reached from this stylesheet, closed root or not. */
+  pg-part-box::part(trigger) {
+    border-color: var(--accent);
+    color: var(--accent);
+    font-weight: 600;
+  }
+</style>
+{{- end}}
+
+{{define "content" -}}
+{{template "challenge-header" .}}
+{{template "challenge-panel" .}}
+
+<section class="stage">
+  <p class="stage__label">Closed root — nothing below this line is addressable</p>
+  <pg-closed-box data-testid="closed-host"></pg-closed-box>
+
+  <div class="actions" style="margin-top:1rem">
+    <button data-testid="closed-read">Read its value property</button>
+    <button data-testid="closed-write">Write through the property</button>
+  </div>
+
+  <table class="results" style="margin-top:1rem">
+    <tbody>
+      <tr><th>value property</th><td data-testid="closed-value">not read yet</td></tr>
+      <tr><th>escaped by event</th><td data-testid="closed-escaped">nothing yet</td></tr>
+    </tbody>
+  </table>
+
+  <p class="stage__label" style="margin-top:2rem">Upgrades late</p>
+  <pg-late-upgrade data-testid="late-host"></pg-late-upgrade>
+
+  <p class="stage__label" style="margin-top:2rem">Styled from outside through ::part</p>
+  <pg-part-box data-testid="part-host"></pg-part-box>
+</section>
+{{- end}}

@@ -77,11 +77,15 @@ test('every declared selector is actually in the page it describes', async ({ pa
       // Checked against the live DOM, not against the selector table the page
       // prints. Reading the table would only prove the manifest agrees with
       // itself, which is exactly the drift this is supposed to catch.
+      // Soft, so one run reports every mismatch rather than stopping at the
+      // first and hiding the rest behind another cycle.
       for (const selector of challenge.selectors.filter((s) => !s.transient)) {
-        await expect(
-          locate(page, selector).first(),
-          `${challenge.id} declares ${selector.testId} but the page has no such element`,
-        ).toBeAttached()
+        await expect
+          .soft(
+            locate(page, selector).first(),
+            `${challenge.id} declares ${selector.testId} but the page has no such element`,
+          )
+          .toBeAttached()
       }
     })
   }
@@ -97,10 +101,12 @@ test('selectors that only exist mid-interaction say so', async ({ page }) => {
       // The transient flag is an exemption from the check above, so it has to
       // be earned: an element present on load must not claim it.
       for (const selector of challenge.selectors.filter((s) => s.transient)) {
-        await expect(
-          locate(page, selector),
-          `${challenge.id} marks ${selector.testId} transient, but it is present on load`,
-        ).toHaveCount(0)
+        await expect
+          .soft(
+            locate(page, selector),
+            `${challenge.id} marks ${selector.testId} transient, but it is present on load`,
+          )
+          .toHaveCount(0)
       }
     })
   }
