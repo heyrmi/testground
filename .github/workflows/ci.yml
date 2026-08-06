@@ -1,0 +1,92 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+env:
+  GO_VERSION: '1.23'
+  NODE_VERSION: '24'
+
+jobs:
+  go:
+    name: Go
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-go@v6
+        with:
+          go-version: ${{ env.GO_VERSION }}
+
+      - name: Check formatting
+        run: |
+          unformatted=$(gofmt -l .)
+          if [ -n "$unformatted" ]; then
+            echo "These files need gofmt:"
+            echo "$unformatted"
+            exit 1
+          fi
+
+      - run: go vet ./...
+      - run: go test -race ./...
+      - run: go build ./...
+
+  bundle:
+    name: Frontend bundle is current
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v6
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: web/app/package-lock.json
+
+      - run: npm ci
+        working-directory: web/app
+      - run: npm run build
+        working-directory: web/app
+
+      # The build output is committed so `go install` yields a working binary.
+      # If it drifts, users of that path get a stale UI without any warning.
+      - name: Verify the committed bundle matches a fresh build
+        run: |
+          if ! git diff --quiet -- web/app/dist; then
+            echo "The committed bundle is stale. Run 'make web' and commit web/app/dist."
+            git diff --stat -- web/app/dist
+            exit 1
+          fi
+
+  e2e:
+    name: Playwright reference suite
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-go@v6
+        with:
+          go-version: ${{ env.GO_VERSION }}
+      - uses: actions/setup-node@v6
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: examples/playwright-ts/package-lock.json
+
+      - run: npm ci
+        working-directory: examples/playwright-ts
+      - run: npx playwright install --with-deps chromium
+        working-directory: examples/playwright-ts
+      - run: npx tsc --noEmit
+        working-directory: examples/playwright-ts
+      - run: npm test
+        working-directory: examples/playwright-ts
+
+      - uses: actions/upload-artifact@v5
+        if: failure()
+        with:
+          name: playwright-traces
+          path: examples/playwright-ts/test-results/
+          retention-days: 7

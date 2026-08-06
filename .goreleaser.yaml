@@ -1,0 +1,71 @@
+version: 2
+project_name: testground
+
+before:
+  hooks:
+    - go mod tidy
+
+builds:
+  - id: playground
+    main: ./cmd/playground
+    binary: playground
+    # Pure Go, no cgo: this is what keeps cross-compilation working and the
+    # binary self-contained, which is the whole distribution promise.
+    env:
+      - CGO_ENABLED=0
+    goos: [linux, darwin, windows]
+    goarch: [amd64, arm64]
+    flags:
+      - -trimpath
+    ldflags:
+      - -s -w
+      - -X github.com/heyrmi/testground/internal/build.Version={{ .Version }}
+      - -X github.com/heyrmi/testground/internal/build.Commit={{ .FullCommit }}
+      - -X github.com/heyrmi/testground/internal/build.Date={{ .Date }}
+
+archives:
+  - id: default
+    formats: [tar.gz]
+    format_overrides:
+      - goos: windows
+        formats: [zip]
+    name_template: >-
+      {{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}
+    files:
+      - README.md
+      - LICENSE
+
+checksum:
+  name_template: checksums.txt
+
+changelog:
+  use: github
+  sort: asc
+  groups:
+    - title: Challenges
+      regexp: '^feat\(challenges\)'
+      order: 0
+    - title: Features
+      regexp: '^feat'
+      order: 1
+    - title: Fixes
+      regexp: '^fix'
+      order: 2
+  filters:
+    exclude:
+      - '^docs:'
+      - '^chore:'
+      - '^test:'
+
+release:
+  draft: false
+  prerelease: auto
+  footer: |
+    ## Getting started
+
+    ```sh
+    ./playground serve
+    ```
+
+    Then open http://127.0.0.1:7373. Nothing else is needed: no network, no
+    Node runtime, no external services.
