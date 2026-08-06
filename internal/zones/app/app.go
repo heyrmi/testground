@@ -18,6 +18,7 @@ func Challenges() []challenge.Challenge {
 	return []challenge.Challenge{
 		delayedElement(),
 		toast(),
+		virtualList(),
 	}
 }
 
@@ -41,8 +42,12 @@ func Pages(dist fs.FS) http.Handler {
 	return r
 }
 
-// API serves the JSON this zone's challenges call.
-func API() http.Handler { return chi.NewRouter() }
+// API serves the JSON this zone's challenges call, mounted at /api/app.
+func API() http.Handler {
+	r := chi.NewRouter()
+	r.Get("/virtual-list/rows", handleVirtualListRows)
+	return r
+}
 
 // missingBundle keeps the rest of the playground usable when someone builds
 // the binary without building the frontend, rather than failing at startup.
