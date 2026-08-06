@@ -32,6 +32,7 @@ func Challenges() []challenge.Challenge {
 		dragAndDrop(),
 		pointerMenus(),
 		tokenRefresh(),
+		hostileLocators(),
 	}
 }
 
