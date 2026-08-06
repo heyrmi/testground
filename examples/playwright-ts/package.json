@@ -1,0 +1,16 @@
+{
+  "name": "@testground/example-playwright",
+  "private": true,
+  "type": "module",
+  "description": "Reference Playwright suite for the testground challenges",
+  "scripts": {
+    "test": "playwright test",
+    "test:ui": "playwright test --ui",
+    "report": "playwright show-report"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.62.1",
+    "@types/node": "^24.10.1",
+    "typescript": "^5.9.3"
+  }
+}
