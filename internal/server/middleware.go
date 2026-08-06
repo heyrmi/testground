@@ -9,6 +9,7 @@ import (
 	"runtime/debug"
 	"time"
 
+	"github.com/heyrmi/testground/internal/httpx"
 	"github.com/heyrmi/testground/internal/session"
 )
 
@@ -101,7 +102,7 @@ func (s *Server) recoverPanics(next http.Handler) http.Handler {
 				"stack", string(debug.Stack()),
 				"request_id", requestIDFrom(r.Context()),
 			)
-			writeError(w, http.StatusInternalServerError, "the playground panicked serving this route")
+			httpx.Fail(w, http.StatusInternalServerError, "the playground panicked serving this route")
 		}()
 		next.ServeHTTP(w, r)
 	})
