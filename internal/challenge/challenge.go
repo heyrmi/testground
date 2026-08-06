@@ -82,6 +82,11 @@ type Selector struct {
 	TestID string `json:"testId"`
 	Role   string `json:"role,omitempty"`
 	Note   string `json:"note"`
+	// Transient marks an element that exists only during an interaction, so a
+	// contract check knows not to expect it in the page as first served. Every
+	// other declared selector must be present on load, and the reference suite
+	// asserts exactly that against the live DOM.
+	Transient bool `json:"transient,omitempty"`
 }
 
 // Endpoint is an HTTP route the challenge's page talks to. Listing them lets a

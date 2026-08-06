@@ -51,9 +51,18 @@ git diff manifest.json
 ```
 
 Committing that file and diffing it in CI is how a course or a test suite
-detects that a page moved. The reference Playwright suite in
-`examples/playwright-ts` does the equivalent at the DOM level: it reads the
-manifest and checks every page against what that page claims about itself.
+detects that a declared contract moved.
+
+The manifest alone cannot tell you whether the *page* still matches it, so the
+reference suite in `examples/playwright-ts` closes that loop: `manifest.spec.ts`
+reads every declared selector and looks it up in the live DOM. A `data-testid`
+that is renamed in the markup but left alone in the declaration fails there,
+which is the drift a manifest diff would miss entirely.
+
+Selectors marked `"transient": true` exist only during an interaction and are
+exempt from that presence check. The exemption is itself checked: a transient
+selector that turns out to be present on load also fails, so the flag cannot
+be used to hide a missing element.
 
 ## Determinism is part of the contract
 

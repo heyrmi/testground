@@ -23,7 +23,7 @@ func delayedElement() challenge.Challenge {
 		Concepts: []string{"explicit wait", "polling for presence", "absence is not yet failure"},
 		Selectors: []challenge.Selector{
 			{TestID: "delay-pending", Note: "Placeholder shown while the wait runs"},
-			{TestID: "delayed-message", Note: "Appears once the delay elapses; not in the DOM before that"},
+			{TestID: "delayed-message", Transient: true, Note: "Appears once the delay elapses; not in the DOM before that"},
 			{TestID: "restart", Role: "button", Note: "Runs the wait again without reloading"},
 			{TestID: "delay-ms", Note: "The delay currently in effect, in milliseconds"},
 		},

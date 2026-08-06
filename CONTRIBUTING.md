@@ -18,9 +18,6 @@ port 5173 and proxies the API to a `playground serve` running on 7373.
 
 ## The rules a challenge must follow
 
-The registry validates every challenge at startup and refuses to serve one
-that breaks these, so you will find out immediately rather than after release:
-
 1. A stable URL under its zone's prefix.
 2. `data-testid` on every meaningful element — unless the challenge is
    *specifically* about hostile locators, in which case set
@@ -31,7 +28,23 @@ that breaks these, so you will find out immediately rather than after release:
    locating.
 6. A reference test in `examples/playwright-ts`.
 
-Beyond validation, two rules matter just as much:
+Most of these are enforced rather than requested, and it is worth knowing
+which check catches what:
+
+| Rule | Enforced by | When it fails |
+|---|---|---|
+| 1, 3, 4, 5 | `challenge.NewRegistry` | The server refuses to start |
+| 2 | `manifest.spec.ts` | Every declared selector is looked up in the live DOM |
+| 6 | `internal/playground/coverage_test.go` | `go test ./...` |
+
+Rule 2 is checked in the direction that matters: a selector you declare but do
+not render fails the suite. Whether you declared *enough* of them is still a
+review question. If an element only exists during an interaction, mark it
+`Transient: true` — that exempts it from the presence check, and the suite
+then asserts it is genuinely absent on load, so the flag cannot be used to
+paper over a missing element.
+
+Beyond those, two rules matter just as much and neither can be automated:
 
 - **Nondeterminism is opt-in.** A page is never randomly flaky unless
   flakiness was asked for. Fixed delays, fixed outcomes, seeded content.

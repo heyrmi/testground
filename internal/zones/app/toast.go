@@ -26,7 +26,7 @@ func toast() challenge.Challenge {
 		Selectors: []challenge.Selector{
 			{TestID: "show-toast", Role: "button", Note: "Raises another toast"},
 			{TestID: "toast-region", Note: "Portal container, a direct child of body rather than of the app root"},
-			{TestID: "toast", Role: "status", Note: "Every visible toast carries this; more than one can match at a time"},
+			{TestID: "toast", Role: "status", Transient: true, Note: "Every visible toast carries this; more than one can match at a time"},
 			{TestID: "toast-count", Note: "Toasts raised so far in this page load; survives dismissal"},
 			{TestID: "toast-last", Note: "Sequence number of the most recently dismissed toast"},
 			{TestID: "toast-live", Note: "How many toasts are on screen right now"},

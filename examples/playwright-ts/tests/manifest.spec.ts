@@ -6,7 +6,7 @@ interface Challenge {
   url: string
   summary: string
   hint: string
-  selectors: { testId: string }[]
+  selectors: { testId: string; transient?: boolean }[]
 }
 
 /**
@@ -44,20 +44,40 @@ test('every challenge page is reachable and describes itself', async ({ page }) 
   }
 })
 
-test('every declared selector exists on its page', async ({ page }) => {
+test('every declared selector is actually in the page it describes', async ({ page }) => {
   const manifest = await (await page.request.get('/api/challenges')).json()
 
   for (const challenge of manifest.challenges as Challenge[]) {
     await test.step(challenge.id, async () => {
       await page.goto(challenge.url)
-      for (const selector of challenge.selectors) {
-        // Some markers only appear mid-interaction, so presence in the
-        // selector table is checked against the panel's own documentation
-        // rather than the live DOM for those.
-        const documented = page
-          .getByTestId('challenge-panel')
-          .locator('td', { hasText: selector.testId })
-        await expect(documented.first()).toBeVisible()
+
+      // Checked against the live DOM, not against the selector table the page
+      // prints. Reading the table would only prove the manifest agrees with
+      // itself, which is exactly the drift this is supposed to catch.
+      for (const selector of challenge.selectors.filter((s) => !s.transient)) {
+        await expect(
+          page.getByTestId(selector.testId).first(),
+          `${challenge.id} declares ${selector.testId} but the page has no such element`,
+        ).toBeAttached()
+      }
+    })
+  }
+})
+
+test('selectors that only exist mid-interaction say so', async ({ page }) => {
+  const manifest = await (await page.request.get('/api/challenges')).json()
+
+  for (const challenge of manifest.challenges as Challenge[]) {
+    await test.step(challenge.id, async () => {
+      await page.goto(challenge.url)
+
+      // The transient flag is an exemption from the check above, so it has to
+      // be earned: an element present on load must not claim it.
+      for (const selector of challenge.selectors.filter((s) => s.transient)) {
+        await expect(
+          page.getByTestId(selector.testId),
+          `${challenge.id} marks ${selector.testId} transient, but it is present on load`,
+        ).toHaveCount(0)
       }
     })
   }
