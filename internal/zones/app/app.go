@@ -22,6 +22,8 @@ func Challenges() []challenge.Challenge {
 		optimisticRevert(),
 		retries(),
 		races(),
+		otpInput(),
+		fakeControls(),
 	}
 }
 

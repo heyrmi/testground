@@ -3,6 +3,8 @@ import { indexRoute, rootRoute } from './root'
 import { route as delayedElementRoute } from './challenges/delayed-element'
 import { route as toastRoute } from './challenges/toast'
 import { route as optimisticRevertRoute } from './challenges/optimistic-revert'
+import { route as fakeControlsRoute } from './challenges/fake-controls'
+import { route as otpRoute } from './challenges/otp-input'
 import { route as racesRoute } from './challenges/request-races'
 import { route as retriesRoute } from './challenges/retries'
 import { route as virtualListRoute } from './challenges/virtual-list'
@@ -15,6 +17,8 @@ const routeTree = rootRoute.addChildren([
   optimisticRevertRoute,
   retriesRoute,
   racesRoute,
+  otpRoute,
+  fakeControlsRoute,
 ])
 
 export const router = createRouter({
