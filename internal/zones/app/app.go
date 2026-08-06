@@ -35,6 +35,7 @@ func Challenges() []challenge.Challenge {
 		hostileLocators(),
 		domScale(),
 		internationalisation(),
+		visualRegression(),
 	}
 }
 
