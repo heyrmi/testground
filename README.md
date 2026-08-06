@@ -107,9 +107,10 @@ npm test
 ## Commands
 
 ```sh
-playground serve                      # bind loopback on :7373
-playground serve --addr 0.0.0.0:7373  # expose it, for containers and workshops
-playground serve --seed 1337          # different content, still deterministic
+playground serve                          # loopback on :7373, second origin on :7374
+playground serve --addr 0.0.0.0:7373      # expose it, for containers and workshops
+playground serve --seed 1337              # different content, still deterministic
+playground serve --cross-origin-addr ""   # bind one port only
 playground manifest                   # print the catalogue without a server
 playground version --json
 ```

@@ -1,4 +1,12 @@
 import { expect, test } from './fixtures'
+import type { Page } from '@playwright/test'
+
+interface Selector {
+  testId: string
+  transient?: boolean
+  /** Iframe test ids to descend before looking, outermost first. */
+  frame?: string[]
+}
 
 interface Challenge {
   id: string
@@ -6,7 +14,22 @@ interface Challenge {
   url: string
   summary: string
   hint: string
-  selectors: { testId: string; transient?: boolean }[]
+  selectors: Selector[]
+}
+
+/**
+ * A locator does not cross a frame boundary on its own, so a declared selector
+ * that lives inside one has to be reached by descending into it. The manifest
+ * says which frames, and in what order.
+ */
+function locate(page: Page, selector: Selector) {
+  if (!selector.frame?.length) return page.getByTestId(selector.testId)
+
+  let frame = page.frameLocator(`[data-testid="${selector.frame[0]}"]`)
+  for (const nested of selector.frame.slice(1)) {
+    frame = frame.frameLocator(`[data-testid="${nested}"]`)
+  }
+  return frame.getByTestId(selector.testId)
 }
 
 /**
@@ -56,7 +79,7 @@ test('every declared selector is actually in the page it describes', async ({ pa
       // itself, which is exactly the drift this is supposed to catch.
       for (const selector of challenge.selectors.filter((s) => !s.transient)) {
         await expect(
-          page.getByTestId(selector.testId).first(),
+          locate(page, selector).first(),
           `${challenge.id} declares ${selector.testId} but the page has no such element`,
         ).toBeAttached()
       }
@@ -75,7 +98,7 @@ test('selectors that only exist mid-interaction say so', async ({ page }) => {
       // be earned: an element present on load must not claim it.
       for (const selector of challenge.selectors.filter((s) => s.transient)) {
         await expect(
-          page.getByTestId(selector.testId),
+          locate(page, selector),
           `${challenge.id} marks ${selector.testId} transient, but it is present on load`,
         ).toHaveCount(0)
       }

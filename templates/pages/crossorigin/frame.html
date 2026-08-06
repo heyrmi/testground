@@ -1,0 +1,11 @@
+{{define "content" -}}
+<section class="stage">
+  <p data-testid="cross-origin-target">
+    A different origin. Script in the parent cannot read a word of this.
+  </p>
+  <p class="field__note">
+    Session <b data-testid="cross-origin-session">{{.Session}}</b> — the same one the parent
+    resolved to, because cookies ignore the port.
+  </p>
+</section>
+{{- end}}

@@ -1,0 +1,41 @@
+{{define "content" -}}
+{{template "challenge-header" .}}
+{{template "challenge-panel" .}}
+
+<section class="stage">
+  <p class="stage__label">
+    Parent document — session <b data-testid="parent-session">{{.Session}}</b>
+  </p>
+
+  <div class="frames">
+    <figure class="frame">
+      <figcaption>Same origin — <code>/classic/frames/embedded</code></figcaption>
+      <iframe src="/classic/frames/embedded" title="Same-origin frame" data-testid="frame-same-origin"></iframe>
+    </figure>
+
+    <figure class="frame">
+      <figcaption>Different origin — <code>{{.Data.CrossOriginBase}}/frame</code></figcaption>
+      <iframe src="{{.Data.CrossOriginBase}}/frame" title="Cross-origin frame" data-testid="frame-cross-origin"></iframe>
+    </figure>
+
+    <figure class="frame">
+      <figcaption>Nested three deep — <code>/classic/frames/nested/1</code></figcaption>
+      <iframe src="/classic/frames/nested/1" title="Nested frames" data-testid="frame-nested"></iframe>
+    </figure>
+
+    <figure class="frame">
+      <figcaption>No URL at all — <code>srcdoc</code></figcaption>
+      <iframe
+        title="srcdoc frame"
+        data-testid="frame-srcdoc"
+        srcdoc="&lt;!doctype html&gt;&lt;meta charset=&quot;utf-8&quot;&gt;&lt;link rel=&quot;stylesheet&quot; href=&quot;/static/shell.css&quot;&gt;&lt;body style=&quot;padding:1rem&quot;&gt;&lt;p data-testid=&quot;srcdoc-target&quot;&gt;This document arrived as an attribute.&lt;/p&gt;&lt;/body&gt;"></iframe>
+    </figure>
+  </div>
+
+  <p class="field__note">
+    The second origin is a separate listener in this same process. It shares the session
+    store, so the id shown inside the cross-origin frame matches the one above — cookies are
+    scoped to a host and ignore the port. What it does not share is the DOM.
+  </p>
+</section>
+{{- end}}

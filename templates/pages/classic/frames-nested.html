@@ -1,0 +1,11 @@
+{{define "content" -}}
+<section class="stage">
+  <p class="stage__label">Frame level {{.Data.Level}}</p>
+  {{if .Data.Last}}
+  <p data-testid="deepest-target">Three frames down. Nothing above this reached it by searching.</p>
+  {{else}}
+  <iframe src="/classic/frames/nested/{{.Data.Next}}" title="Frame level {{.Data.Next}}"
+          data-testid="frame-level-{{.Data.Next}}"></iframe>
+  {{end}}
+</section>
+{{- end}}

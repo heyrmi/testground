@@ -87,6 +87,10 @@ type Selector struct {
 	// other declared selector must be present on load, and the reference suite
 	// asserts exactly that against the live DOM.
 	Transient bool `json:"transient,omitempty"`
+	// Frame is the path of iframe test ids to descend before looking, for an
+	// element that lives in a nested browsing context rather than in the top
+	// document. A locator that does not enter these frames will never find it.
+	Frame []string `json:"frame,omitempty"`
 }
 
 // Endpoint is an HTTP route the challenge's page talks to. Listing them lets a

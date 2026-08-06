@@ -15,7 +15,7 @@ const referenceSuite = "../../examples/playwright-ts/tests"
 // registry cannot check that, so this does: without it the rule is a request
 // rather than a requirement.
 func TestEveryChallengeHasAReferenceSpec(t *testing.T) {
-	registry, err := Registry()
+	registry, err := Registry(Config{CrossOriginAddr: "127.0.0.1:7374"})
 	if err != nil {
 		t.Fatalf("building registry: %v", err)
 	}
@@ -31,7 +31,7 @@ func TestEveryChallengeHasAReferenceSpec(t *testing.T) {
 // The reverse direction catches a spec left behind after a challenge was
 // renamed, which would otherwise sit there testing nothing.
 func TestEveryReferenceSpecMatchesAChallenge(t *testing.T) {
-	registry, err := Registry()
+	registry, err := Registry(Config{CrossOriginAddr: "127.0.0.1:7374"})
 	if err != nil {
 		t.Fatalf("building registry: %v", err)
 	}

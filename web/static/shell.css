@@ -594,3 +594,31 @@ a.button {
   text-decoration: none;
   color: var(--text);
 }
+
+/* Frames ------------------------------------------------------------------ */
+
+.frames {
+  display: grid;
+  gap: 1.25rem;
+  grid-template-columns: repeat(auto-fit, minmax(20rem, 1fr));
+}
+
+.frame {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.frame figcaption {
+  font-size: 0.75rem;
+  color: var(--muted);
+}
+
+iframe {
+  width: 100%;
+  min-height: 11rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--bg);
+}

@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"net"
 	"time"
 
 	"github.com/spf13/cobra"
@@ -14,9 +15,10 @@ import (
 
 func newServeCommand(logs *logOptions) *cobra.Command {
 	var (
-		addr string
-		seed uint64
-		ttl  time.Duration
+		addr      string
+		crossAddr string
+		seed      uint64
+		ttl       time.Duration
 	)
 
 	cmd := &cobra.Command{
@@ -25,7 +27,13 @@ func newServeCommand(logs *logOptions) *cobra.Command {
 		Long: `Serve the challenge suite.
 
 Binds to loopback by default. Pass --addr 0.0.0.0:7373 to expose it to other
-machines, which is what a container or a shared workshop host wants.`,
+machines, which is what a container or a shared workshop host wants.
+
+A second address is bound as well. The browser decides what is same-origin
+from scheme, host and port, so the frame challenges need a genuinely different
+socket to embed -- it is the same binary sharing the same session store, on
+another port. Pass --cross-origin-addr "" to bind only one, in which case the
+challenges that need the second origin are not registered at all.`,
 		Args: cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			logger, err := newLogger(*logs)
@@ -34,11 +42,12 @@ machines, which is what a container or a shared workshop host wants.`,
 			}
 
 			version := build.Current().Version
-			srv, err := playground.New(playground.Config{
-				Seed:       seed,
-				SessionTTL: ttl,
-				Version:    version,
-				Logger:     logger,
+			ground, err := playground.New(playground.Config{
+				Seed:            seed,
+				SessionTTL:      ttl,
+				Version:         version,
+				Logger:          logger,
+				CrossOriginAddr: crossAddr,
 			})
 			if err != nil {
 				return err
@@ -46,17 +55,30 @@ machines, which is what a container or a shared workshop host wants.`,
 
 			// Bind first, announce second: a failed bind should report the
 			// failure rather than a URL that was never served.
-			listener, err := srv.Listen(addr)
+			listener, err := ground.Main.Listen(addr)
 			if err != nil {
 				return err
 			}
+			defer listener.Close()
+
+			var crossListener net.Listener
+			if ground.Cross != nil {
+				if crossListener, err = ground.Cross.Listen(crossAddr); err != nil {
+					return err
+				}
+				defer crossListener.Close()
+			}
 
 			cmd.Printf("testground %s listening on http://%s (seed %d)\n", version, listener.Addr(), seed)
-			return srv.Serve(cmd.Context(), listener)
+			if crossListener != nil {
+				cmd.Printf("second origin on http://%s, for the cross-origin frame challenges\n", crossListener.Addr())
+			}
+			return ground.Serve(cmd.Context(), listener, crossListener)
 		},
 	}
 
 	cmd.Flags().StringVarP(&addr, "addr", "a", "127.0.0.1:7373", "address to listen on")
+	cmd.Flags().StringVar(&crossAddr, "cross-origin-addr", "127.0.0.1:7374", "second address to bind for the cross-origin challenges; empty to disable")
 	cmd.Flags().Uint64Var(&seed, "seed", rng.DefaultSeed, "seed every session starts from")
 	cmd.Flags().DurationVar(&ttl, "session-ttl", session.DefaultTTL, "how long an idle session survives")
 

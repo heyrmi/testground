@@ -12,7 +12,10 @@ import (
 )
 
 func newManifestCommand() *cobra.Command {
-	var seed uint64
+	var (
+		seed      uint64
+		crossAddr string
+	)
 
 	cmd := &cobra.Command{
 		Use:   "manifest",
@@ -23,7 +26,7 @@ This is the same document served at /api/challenges. Committing its output and
 diffing it in CI is how a project detects that a page's contract moved.`,
 		Args: cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, _ []string) error {
-			registry, err := playground.Registry()
+			registry, err := playground.Registry(playground.Config{CrossOriginAddr: crossAddr})
 			if err != nil {
 				return err
 			}
@@ -33,6 +36,7 @@ diffing it in CI is how a project detects that a page's contract moved.`,
 	}
 
 	cmd.Flags().Uint64Var(&seed, "seed", rng.DefaultSeed, "seed to report in the manifest")
+	cmd.Flags().StringVar(&crossAddr, "cross-origin-addr", "127.0.0.1:7374", "match the serve flag, since it decides which challenges are registered")
 	return cmd
 }
 

@@ -1,0 +1,15 @@
+{{define "content" -}}
+<section class="intro">
+  <h1 data-testid="second-origin-heading">The second origin</h1>
+  <p>
+    This is the same binary on a second port. It exists so the frame challenges have a
+    genuinely different origin to embed: the browser decides same-origin from scheme, host
+    and port, and no header talks it out of that.
+  </p>
+  <p>
+    It shares the session store with the main origin, so state crosses freely even though
+    the DOM does not. <a href="/whoami" data-testid="whoami-link">/whoami</a> reports which
+    session a request here resolved to.
+  </p>
+</section>
+{{- end}}
