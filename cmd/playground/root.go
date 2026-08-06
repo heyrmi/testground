@@ -41,6 +41,7 @@ on every run and every machine.`),
 
 	root.AddCommand(
 		newServeCommand(&logs),
+		newSeedCommand(),
 		newManifestCommand(),
 		newVersionCommand(),
 	)

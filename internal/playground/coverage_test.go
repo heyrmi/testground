@@ -40,6 +40,7 @@ func TestEveryReferenceSpecMatchesAChallenge(t *testing.T) {
 	crossCutting := map[string]bool{
 		"manifest.spec.ts":          true,
 		"session-isolation.spec.ts": true,
+		"control-plane.spec.ts":     true,
 	}
 
 	specs, err := filepath.Glob(filepath.Join(referenceSuite, "*.spec.ts"))

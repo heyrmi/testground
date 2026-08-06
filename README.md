@@ -51,6 +51,13 @@ of every challenge: id, url, tier, tags, concepts, the selectors worth
 locating, and the endpoints behind the page. Documentation, coverage tooling
 and page-object generators read that instead of scraping the site.
 
+**A control plane.** Latency, failure rates, flake probability and the clock
+are all injectable per session, so you can make your own copy of the
+playground misbehave without touching anyone else's. Injected chaos still
+replays: it is drawn from your seed, so a test that fails against a 50%
+failure rate fails the same way next run. See
+[the control plane](docs/control-plane.md).
+
 **Honest about difficulty.** Challenges are graded T1 (intro) to T4 (hostile —
 deliberately near-unautomatable, shipped to teach what *not* to build).
 
@@ -143,7 +150,9 @@ playground serve                          # loopback on :7373, second origin on 
 playground serve --addr 0.0.0.0:7373      # expose it, for containers and workshops
 playground serve --seed 1337              # different content, still deterministic
 playground serve --cross-origin-addr ""   # bind one port only
-playground manifest                   # print the catalogue without a server
+playground manifest                       # print the catalogue without a server
+playground seed --session worker-1        # what seed is that worker on?
+playground seed 1337 --session worker-1   # put it on another one
 playground version --json
 ```
 
@@ -153,6 +162,8 @@ playground version --json
 | `GET /api/challenges/{id}` | One challenge |
 | `GET /api/health` | Challenge and session counts |
 | `GET /api/version` | Build identity |
+| `POST /api/control/*` | [Latency, failure, flake, clock, seed, reset](docs/control-plane.md) |
+| `GET /api/control/state` | Everything about the copy you are driving |
 
 ## Building from source
 
@@ -167,12 +178,9 @@ committed so `go install` produces a working binary; rebuild it with
 
 ## Roadmap
 
-v0.2.0 covers the ground the-internet and UI Testing Playground cover, on your
-own machine and with a stability contract. What follows, in order:
+v0.3.0 adds the control plane, which is the point at which this becomes usable
+in real CI. What follows, in order:
 
-- **v0.3.0** — the control plane. Reset, reseed, latency injection, failure
-  rates, flake probability, clock manipulation. The point at which this
-  becomes usable in real CI.
 - **v0.4.0** — the modern SPA in full: awkward inputs, DOM instability, tables
   and data, drag and gestures.
 - **v0.5.0** — authentication, including token refresh mid-suite and a
