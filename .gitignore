@@ -1,0 +1,24 @@
+# Build output
+/dist/
+/playground
+*.exe
+
+# Go
+*.test
+*.out
+/vendor/
+
+# Node
+node_modules/
+.vite/
+*.tsbuildinfo
+
+# Playwright
+/examples/playwright-ts/test-results/
+/examples/playwright-ts/playwright-report/
+/examples/playwright-ts/.playwright/
+
+# Editors and OS
+.DS_Store
+.idea/
+.vscode/
