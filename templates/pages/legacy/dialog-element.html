@@ -1,0 +1,79 @@
+{{define "layout"}}{{template "layout-legacy" .}}{{end}}
+
+{{define "head" -}}
+<style>
+  dialog { border: 1px solid #ccc; border-radius: 6px; padding: 1.5em; max-width: 30em; }
+  dialog::backdrop { background: rgba(0, 0, 0, .45); }
+</style>
+{{- end}}
+
+{{define "content" -}}
+{{template "legacy-header" .}}
+{{template "legacy-panel" .}}
+
+<div class="panel panel-default">
+  <div class="panel-body">
+    <div class="btn-toolbar">
+      <button class="btn btn-primary" data-testid="open-modal">Open modal (showModal)</button>
+      <button class="btn btn-default" data-testid="open-modeless">Open non-modal (show)</button>
+      <button class="btn btn-success" data-testid="background-button">Background button</button>
+    </div>
+
+    <hr>
+
+    <dl class="dl-horizontal">
+      <dt>Background clicks</dt><dd><span data-testid="background-clicks">0</span></dd>
+      <dt>Closed with</dt><dd><span data-testid="dialog-return">nothing yet</span></dd>
+    </dl>
+
+    <p class="text-muted">
+      While the modal is open the background button is still in the DOM, still laid out and
+      still reported enabled. The browser will simply not deliver a click to it.
+    </p>
+  </div>
+</div>
+
+<dialog data-testid="modal-dialog">
+  <h4>Modal</h4>
+  <p>Everything behind this is inert. Escape closes it.</p>
+  <form method="dialog">
+    <button class="btn btn-primary" value="confirmed" data-testid="confirm-dialog">Confirm</button>
+    <button class="btn btn-default" value="cancelled" data-testid="cancel-dialog">Cancel</button>
+  </form>
+</dialog>
+
+<dialog data-testid="modeless-dialog">
+  <h4>Not modal</h4>
+  <p>The page behind this one still works. Escape does not close it.</p>
+  <form method="dialog">
+    <button class="btn btn-default" value="dismissed" data-testid="close-modeless">Close</button>
+  </form>
+</dialog>
+{{- end}}
+
+{{define "scripts" -}}
+<script>
+  jQuery(function ($) {
+    var modal = document.querySelector('[data-testid="modal-dialog"]');
+    var modeless = document.querySelector('[data-testid="modeless-dialog"]');
+    var clicks = 0;
+
+    $('[data-testid="open-modal"]').on('click', function () { modal.showModal(); });
+    $('[data-testid="open-modeless"]').on('click', function () { modeless.show(); });
+
+    $('[data-testid="background-button"]').on('click', function () {
+      clicks += 1;
+      $('[data-testid="background-clicks"]').text(clicks);
+    });
+
+    // returnValue is the only record of how the dialog closed once its own
+    // contents are no longer on screen.
+    $(modal).on('close', function () {
+      $('[data-testid="dialog-return"]').text(modal.returnValue || 'escape');
+    });
+    $(modeless).on('close', function () {
+      $('[data-testid="dialog-return"]').text(modeless.returnValue || 'escape');
+    });
+  });
+</script>
+{{- end}}

@@ -28,6 +28,8 @@ func pages() []page {
 		windows(),
 		visibility(),
 		ajaxSearch(),
+		dialogElement(),
+		history(),
 	}
 }
 

@@ -1,0 +1,71 @@
+{{define "layout"}}{{template "layout-legacy" .}}{{end}}
+
+{{define "content" -}}
+{{template "legacy-header" .}}
+{{template "legacy-panel" .}}
+
+<div class="panel panel-default">
+  <div class="panel-body">
+    <div class="btn-toolbar">
+      <button class="btn btn-primary" data-testid="push-one">pushState — step 1</button>
+      <button class="btn btn-primary" data-testid="push-two">pushState — step 2</button>
+      <button class="btn btn-warning" data-testid="replace">replaceState — replaced</button>
+      <a class="btn btn-default" href="#section-two" data-testid="hash-link">Hash link</a>
+    </div>
+
+    <hr>
+
+    <dl class="dl-horizontal">
+      <dt>Step</dt><dd><span data-testid="current-step">none</span></dd>
+      <dt>Hash</dt><dd><span data-testid="current-hash">none</span></dd>
+      <dt>History rebuilds</dt><dd><span data-testid="popstate-count">0</span></dd>
+    </dl>
+
+    <p class="text-muted">
+      Nothing above makes a request. Going back lands on a URL this server never served, and
+      what you see is rebuilt by script from the address bar.
+    </p>
+  </div>
+</div>
+{{- end}}
+
+{{define "scripts" -}}
+<script>
+  jQuery(function ($) {
+    var rebuilds = 0;
+    var base = '/legacy/history';
+
+    function render() {
+      var params = new URLSearchParams(window.location.search);
+      $('[data-testid="current-step"]').text(params.get('step') || 'none');
+      $('[data-testid="current-hash"]').text(window.location.hash || 'none');
+    }
+
+    $('[data-testid="push-one"]').on('click', function () {
+      window.history.pushState({ step: '1' }, '', base + '?step=1');
+      render();
+    });
+
+    $('[data-testid="push-two"]').on('click', function () {
+      window.history.pushState({ step: '2' }, '', base + '?step=2');
+      render();
+    });
+
+    $('[data-testid="replace"]').on('click', function () {
+      // No entry is added, so going back skips past this to whatever came
+      // before it.
+      window.history.replaceState({ step: 'replaced' }, '', base + '?step=replaced');
+      render();
+    });
+
+    $(window).on('popstate', function () {
+      rebuilds += 1;
+      $('[data-testid="popstate-count"]').text(rebuilds);
+      render();
+    });
+
+    $(window).on('hashchange', render);
+    render();
+  });
+</script>
+{{- end}}
