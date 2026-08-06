@@ -5,6 +5,7 @@ import { route as toastRoute } from './challenges/toast'
 import { route as optimisticRevertRoute } from './challenges/optimistic-revert'
 import { route as dataTableRoute } from './challenges/data-table'
 import { route as domScaleRoute } from './challenges/dom-scale'
+import { route as i18nRoute } from './challenges/internationalisation'
 import { route as hostileRoute } from './challenges/hostile-locators'
 import { route as dragAndDropRoute } from './challenges/drag-and-drop'
 import { route as pointerMenusRoute } from './challenges/pointer-menus'
@@ -35,6 +36,7 @@ const routeTree = rootRoute.addChildren([
   tokenRefreshRoute,
   hostileRoute,
   domScaleRoute,
+  i18nRoute,
 ])
 
 export const router = createRouter({

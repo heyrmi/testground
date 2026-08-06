@@ -34,6 +34,7 @@ func Challenges() []challenge.Challenge {
 		tokenRefresh(),
 		hostileLocators(),
 		domScale(),
+		internationalisation(),
 	}
 }
 
