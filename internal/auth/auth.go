@@ -85,6 +85,11 @@ type Store struct {
 	// through the control plane so tests can compute real codes.
 	totpSecret string
 
+	// sessionID scopes the CSRF token. The signing key is seed-derived on
+	// purpose so tests can forge tokens; a CSRF token that is the same in
+	// every session with the same seed would make the whole guard cosmetic.
+	sessionID string
+
 	mu          sync.Mutex
 	login       *Login
 	csrf        string
@@ -111,6 +116,7 @@ func For(sess *session.Session) *Store {
 		}
 
 		return &Store{
+			sessionID:   string(sess.ID),
 			secret:      secret,
 			totpSecret:  base32.StdEncoding.WithPadding(base32.NoPadding).EncodeToString(raw),
 			magicTokens: make(map[string]string),
@@ -232,7 +238,7 @@ func (s *Store) CSRF() string {
 
 	if s.csrf == "" {
 		mac := hmac.New(sha256.New, s.secret)
-		mac.Write([]byte("csrf"))
+		fmt.Fprintf(mac, "csrf:%s", s.sessionID)
 		s.csrf = hex.EncodeToString(mac.Sum(nil))[:32]
 	}
 	return s.csrf

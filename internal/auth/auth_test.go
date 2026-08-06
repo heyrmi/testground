@@ -225,3 +225,27 @@ func TestResetClearsEverything(t *testing.T) {
 		t.Error("magic links survived reset")
 	}
 }
+
+// The signing key is shared between sessions on the same seed by design, so a
+// test can forge tokens. The CSRF token must not be: a guard that accepts a
+// token minted in a different session is not guarding anything.
+func TestCSRFTokensDifferBetweenSessions(t *testing.T) {
+	store := session.NewStore(session.Options{Seed: 42})
+	first := For(store.Open("worker-one"))
+	second := For(store.Open("worker-two"))
+
+	if first.SecretHex() != second.SecretHex() {
+		t.Fatal("the signing key should be shared for a seed, so tokens can be forged deliberately")
+	}
+	if first.CSRF() == second.CSRF() {
+		t.Fatal("two sessions share a CSRF token, which makes the guard cosmetic")
+	}
+}
+
+func TestCSRFTokenIsStableWithinASession(t *testing.T) {
+	store, _ := newStore(t, 42)
+
+	if store.CSRF() != store.CSRF() {
+		t.Fatal("the token changed between reads, which would make every form a race")
+	}
+}

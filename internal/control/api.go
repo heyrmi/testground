@@ -186,6 +186,8 @@ func Routes(store *session.Store) http.Handler {
 		writeState(w, session.MustFromContext(req.Context()))
 	})
 
+	authRoutes(r)
+
 	return r
 }
 

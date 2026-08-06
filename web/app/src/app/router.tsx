@@ -11,6 +11,7 @@ import { route as fakeControlsRoute } from './challenges/fake-controls'
 import { route as modalPortalRoute } from './challenges/modal-portal'
 import { route as otpRoute } from './challenges/otp-input'
 import { route as racesRoute } from './challenges/request-races'
+import { route as tokenRefreshRoute } from './challenges/token-refresh'
 import { route as retriesRoute } from './challenges/retries'
 import { route as virtualListRoute } from './challenges/virtual-list'
 
@@ -29,6 +30,7 @@ const routeTree = rootRoute.addChildren([
   dataTableRoute,
   dragAndDropRoute,
   pointerMenusRoute,
+  tokenRefreshRoute,
 ])
 
 export const router = createRouter({

@@ -5,6 +5,8 @@
 package app
 
 import (
+	"encoding/json"
+	"io"
 	"io/fs"
 	"net/http"
 
@@ -29,6 +31,7 @@ func Challenges() []challenge.Challenge {
 		dataTable(),
 		dragAndDrop(),
 		pointerMenus(),
+		tokenRefresh(),
 	}
 }
 
@@ -63,6 +66,9 @@ func API() http.Handler {
 	r.Get("/races/search", handleRacesEcho)
 	r.Get("/races/step", handleRacesEcho)
 	r.Get("/table/rows", handleTableRows)
+	r.Post("/auth/login", handleAuthLogin)
+	r.Get("/auth/me", handleAuthMe)
+	r.Post("/auth/refresh", handleAuthRefresh)
 	return r
 }
 
@@ -82,4 +88,14 @@ func missingBundle() http.Handler {
 <p><a href="/">Back to the challenge index</a></p>
 </section></main>`))
 	})
+}
+
+// decodeJSON reads a JSON body, ignoring an empty or malformed one so a
+// handler can fall back to defaults rather than refusing the request.
+func decodeJSON(r *http.Request, into any) {
+	body, err := io.ReadAll(io.LimitReader(r.Body, 1<<20))
+	if err != nil || len(body) == 0 {
+		return
+	}
+	_ = json.Unmarshal(body, into)
 }

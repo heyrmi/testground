@@ -1,0 +1,72 @@
+{{define "content" -}}
+{{template "challenge-header" .}}
+{{template "challenge-panel" .}}
+
+<section class="stage">
+  {{with .Data.Login}}
+  <p data-testid="welcome">
+    Signed in as <b>{{.Name}}</b> ({{.Username}}), role
+    <b data-testid="current-role">{{.Role}}</b>.
+  </p>
+  {{if .Remembered}}
+  <p class="field__note" data-testid="remembered">This login was marked as remembered.</p>
+  {{end}}
+  <form method="post" action="/classic/form-login/logout" class="actions">
+    <button type="submit" class="primary" data-testid="logout">Log out</button>
+  </form>
+  <p class="field__note">
+    Logging out ends the login on the server. Keeping the cookie afterwards buys nothing.
+  </p>
+  {{else}}
+  {{if .Data.Error}}
+  <p data-testid="login-error"><b>{{.Data.Error}}</b></p>
+  {{end}}
+
+  <form method="post" action="/classic/form-login" class="stack" data-testid="login-form">
+    <input type="hidden" name="csrf" value="{{.Data.CSRF}}" data-testid="csrf-token">
+    <div class="fields">
+      <div class="field">
+        <label for="username">Username</label>
+        <input id="username" name="username" type="text" autocomplete="username" data-testid="field-username">
+      </div>
+      <div class="field">
+        <label for="password">Password</label>
+        <input id="password" name="password" type="password" autocomplete="current-password" data-testid="field-password">
+      </div>
+    </div>
+    <label class="choice">
+      <input type="checkbox" name="remember" value="yes" data-testid="field-remember"> Remember me
+    </label>
+    <div class="actions">
+      <button type="submit" class="primary" data-testid="submit">Sign in</button>
+    </div>
+  </form>
+
+  <h2 class="stage__heading">Accounts</h2>
+  <table class="results">
+    <tbody>
+      {{range .Data.Users}}
+      <tr><th>{{.Username}}</th><td>{{.Role}}{{if .TwoFactor}} — needs a second factor{{end}}</td></tr>
+      {{end}}
+    </tbody>
+  </table>
+  <p class="field__note">
+    Every password is the username followed by <code>123</code>. Guessing is not the exercise.
+  </p>
+  {{end}}
+
+  <h2 class="stage__heading">Throttle</h2>
+  <table class="results">
+    <tbody>
+      <tr><th>failed attempts</th><td data-testid="attempts">{{.Data.Attempts}}</td></tr>
+      {{if .Data.LockedFor}}
+      <tr><th>locked for</th><td data-testid="locked-for">{{.Data.LockedFor}}</td></tr>
+      {{end}}
+    </tbody>
+  </table>
+  <p class="field__note">
+    Five wrong attempts throttle this session for thirty seconds, measured on the session
+    clock — so advancing the clock through the control plane lifts it without waiting.
+  </p>
+</section>
+{{- end}}
