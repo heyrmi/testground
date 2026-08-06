@@ -74,11 +74,11 @@ your tooling rather than one framework's happy path.
 | Classic | `/classic` | Go templates, no JavaScript | shipping |
 | Legacy | `/legacy` | jQuery 3.7, Bootstrap 3.4 | shipping |
 | Hypermedia | `/hx` | htmx 2, Alpine.js | later |
-| Realtime | `/live` | WebSocket, SSE | later |
+| Realtime | `/live` | Vanilla TypeScript, WebSocket, SSE | shipping |
 
-## Challenges in v0.5.0
+## Challenges in v0.6.0
 
-Thirty-five pages covering 139 distinct concepts.
+Thirty-eight pages covering 150 distinct concepts, with 349 documented selectors.
 Every one is in the manifest, and every one can be made slow, broken or flaky
 through the control plane.
 
@@ -129,6 +129,14 @@ through the control plane.
 | Two kinds of dragging | T3 | Native drag is not mouse movement |
 | Menus that need the pointer to stay put | T3 | A double click is also two single clicks |
 | An access token that expires mid-suite | T3 | Move the clock; don't wait sixty seconds |
+
+**Realtime — `/live`, vanilla TypeScript over WebSocket and SSE**
+
+| Challenge | Tier | Teaches |
+|---|---|---|
+| A socket that talks back, and one that just talks | T2 | Updates with no triggering action to wait after |
+| A connection that drops, and messages out of order | T3 | A dead socket looks exactly like a quiet one |
+| A stream that ends, one that stalls, one that writes | T3 | Stalled is neither failed nor finished |
 
 **Components — `/wc`, Lit and vanilla custom elements**
 
@@ -197,9 +205,8 @@ committed so `go install` produces a working binary; rebuild it with
 
 ## Roadmap
 
-v0.5.0 adds authentication. What follows, in order:
+v0.6.0 adds the realtime zone. What follows, in order:
 
-- **v0.6.0** — realtime.
 - **v0.7.0** — hostile locators, performance and scale, visual regression
   targets, internationalisation.
 - **v0.8.0** — accessibility and mobile, each page shipping an
