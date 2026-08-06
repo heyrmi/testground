@@ -80,17 +80,10 @@ func (s *Server) logRequests(next http.Handler) http.Handler {
 			"status", rec.status,
 			"bytes", rec.bytes,
 			"duration", time.Since(started).Round(time.Microsecond).String(),
-			"session", sessionIDFrom(r),
+			"session", rec.Header().Get(session.Header),
 			"request_id", requestIDFrom(r.Context()),
 		)
 	})
-}
-
-func sessionIDFrom(r *http.Request) string {
-	if sess := session.FromContext(r.Context()); sess != nil {
-		return string(sess.ID)
-	}
-	return ""
 }
 
 // recoverPanics keeps one broken challenge from taking the server down, which

@@ -14,6 +14,7 @@ import (
 	"time"
 
 	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/chi/v5/middleware"
 
 	"github.com/heyrmi/testground/internal/challenge"
 	"github.com/heyrmi/testground/internal/render"
@@ -72,7 +73,9 @@ func (s *Server) Handler() http.Handler { return s.router }
 
 func (s *Server) routes() chi.Router {
 	r := chi.NewRouter()
-	r.Use(requestID, s.logRequests, s.recoverPanics)
+	// GetHead answers HEAD from the GET handlers, so health checks and link
+	// checkers do not see a 405 on every page.
+	r.Use(middleware.GetHead, requestID, s.logRequests, s.recoverPanics)
 
 	// Static assets sit outside the session middleware. They carry no state,
 	// and minting a session for every stylesheet would churn the store.

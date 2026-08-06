@@ -59,8 +59,13 @@ func MustRegistry(sets ...[]Challenge) *Registry {
 	return r
 }
 
-// All returns every challenge, ordered by id.
-func (r *Registry) All() []Challenge { return append([]Challenge(nil), r.ordered...) }
+// All returns every challenge, ordered by id. It is never nil, so the manifest
+// always encodes an array rather than a null.
+func (r *Registry) All() []Challenge {
+	out := make([]Challenge, len(r.ordered))
+	copy(out, r.ordered)
+	return out
+}
 
 // Len reports how many challenges are registered.
 func (r *Registry) Len() int { return len(r.ordered) }
