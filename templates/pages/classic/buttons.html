@@ -1,0 +1,45 @@
+{{define "content" -}}
+{{template "challenge-header" .}}
+{{template "challenge-panel" .}}
+
+<section class="stage">
+  <form method="post" action="/classic/buttons" class="stack" data-testid="form">
+    <div class="field">
+      <label for="draft">Draft</label>
+      <input id="draft" name="draft" type="text" value="" data-testid="field-draft" placeholder="type something, then try reset">
+    </div>
+
+    <div class="actions">
+      <button type="submit" name="action" value="save" class="primary" data-testid="submit-save">Save</button>
+      <button type="submit" name="action" value="publish" data-testid="submit-publish">Publish</button>
+      <button type="submit" name="action" value="icon" data-testid="submit-icon"><span aria-hidden="true">✓</span> <span>Save with an icon</span></button>
+      <button type="reset" data-testid="reset">Reset</button>
+      <button type="button" data-testid="inert">Does nothing</button>
+      <button type="submit" name="action" value="never" disabled data-testid="disabled">Disabled</button>
+      <a href="/classic/buttons" class="button" data-testid="link-button">Looks like a button</a>
+    </div>
+
+    <p class="field__note">
+      Only three of these post anything. The reset clears the field, the inert one has no
+      script behind it in a zone that runs none, the disabled one swallows the click, and
+      the last is an anchor that simply fetches this page again.
+    </p>
+  </form>
+
+  {{with .Data.Latest}}
+  <h2 class="stage__heading">What the server received</h2>
+  <table class="results" data-testid="result">
+    <tbody>
+      <tr><th>action</th><td data-testid="result-action">{{.Action}}</td></tr>
+      <tr><th>draft</th><td data-testid="result-draft">{{.Draft}}</td></tr>
+    </tbody>
+  </table>
+  <p class="field__note">
+    Posted <b data-testid="submission-count">{{$.Data.Count}}</b> time(s). Following the link
+    does not change that number.
+  </p>
+  {{else}}
+  <p class="empty" data-testid="no-submission">Nothing has been posted yet.</p>
+  {{end}}
+</section>
+{{- end}}

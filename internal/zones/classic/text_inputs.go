@@ -56,7 +56,7 @@ func textInputs() page {
 			{TestID: "field-search", Role: "searchbox", Note: "type=search, which some browsers give a clear button"},
 			{TestID: "field-comment", Role: "textbox", Note: "Textarea with a maxlength of 200"},
 			{TestID: "submit", Role: "button", Note: "Posts the form; Enter in any field does the same"},
-			{TestID: "clear", Role: "button", Note: "Discards the recorded submission"},
+			{TestID: "clear", Role: "button", Transient: true, Note: "Discards the recorded submission; appears only once there is one"},
 			{TestID: "result", Transient: true, Note: "Table of what the server received; absent until something is posted"},
 			{TestID: "submission-count", Transient: true, Note: "How many times this session has posted the form"},
 			{TestID: "no-submission", Note: "Shown while nothing has been posted yet"},

@@ -27,6 +27,10 @@ type page struct {
 func pages() []page {
 	return []page{
 		textInputs(),
+		choices(),
+		pickers(),
+		buttons(),
+		fieldStates(),
 	}
 }
 

@@ -585,3 +585,12 @@ legend {
   color: var(--muted);
   font-style: italic;
 }
+
+/* An anchor dressed as a button. It is here because Zone 1 needs to show that
+   the two are not interchangeable, so it must look identical and behave
+   differently. */
+a.button {
+  display: inline-block;
+  text-decoration: none;
+  color: var(--text);
+}

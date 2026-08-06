@@ -1,0 +1,76 @@
+{{define "content" -}}
+{{template "challenge-header" .}}
+{{template "challenge-panel" .}}
+
+<section class="stage">
+  <form method="post" action="/classic/pickers" class="stack" data-testid="form">
+    <div class="fields">
+      <div class="field">
+        <label for="volume">Volume</label>
+        <input id="volume" name="volume" type="range" min="0" max="100" step="10" value="30" data-testid="field-volume">
+        <p class="field__note">No text to type. Focus it and use the arrow keys.</p>
+      </div>
+
+      <div class="field">
+        <label for="colour">Colour</label>
+        <input id="colour" name="colour" type="color" value="#b4541e" data-testid="field-colour">
+        <p class="field__note">Clicking opens an operating-system dialog no driver can reach.</p>
+      </div>
+    </div>
+
+    <div class="fields">
+      <div class="field">
+        <label for="date">Date</label>
+        <input id="date" name="date" type="date" data-testid="field-date">
+      </div>
+      <div class="field">
+        <label for="time">Time</label>
+        <input id="time" name="time" type="time" data-testid="field-time">
+      </div>
+      <div class="field">
+        <label for="moment">Date and time</label>
+        <input id="moment" name="moment" type="datetime-local" data-testid="field-moment">
+      </div>
+      <div class="field">
+        <label for="month">Month</label>
+        <input id="month" name="month" type="month" data-testid="field-month">
+      </div>
+      <div class="field">
+        <label for="week">Week</label>
+        <input id="week" name="week" type="week" data-testid="field-week">
+      </div>
+      <div class="field">
+        <label for="deadline">Deadline</label>
+        <input id="deadline" name="deadline" type="date" min="2026-01-01" max="2026-12-31" data-testid="field-deadline">
+        <p class="field__note">Constrained to 2026; anything outside it fails validation before posting.</p>
+      </div>
+    </div>
+
+    <div class="actions">
+      <button type="submit" class="primary" data-testid="submit">Submit</button>
+    </div>
+  </form>
+
+  {{with .Data.Latest}}
+  <h2 class="stage__heading">What the server received</h2>
+  <table class="results" data-testid="result">
+    <tbody>
+      <tr><th>volume</th><td data-testid="result-volume">{{.Volume}}</td></tr>
+      <tr><th>colour</th><td data-testid="result-colour">{{.Colour}}</td></tr>
+      <tr><th>date</th><td data-testid="result-date">{{.Date}}</td></tr>
+      <tr><th>time</th><td data-testid="result-time">{{.Time}}</td></tr>
+      <tr><th>moment</th><td data-testid="result-moment">{{.Moment}}</td></tr>
+      <tr><th>month</th><td data-testid="result-month">{{.Month}}</td></tr>
+      <tr><th>week</th><td data-testid="result-week">{{.Week}}</td></tr>
+      <tr><th>deadline</th><td data-testid="result-deadline">{{.Deadline}}</td></tr>
+    </tbody>
+  </table>
+  <p class="field__note">
+    Every one of these posts a plain string in the format the HTML specification fixes,
+    whatever the browser chose to render.
+  </p>
+  {{else}}
+  <p class="empty" data-testid="no-submission">Nothing has been posted yet.</p>
+  {{end}}
+</section>
+{{- end}}

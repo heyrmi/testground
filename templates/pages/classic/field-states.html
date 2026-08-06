@@ -1,0 +1,73 @@
+{{define "content" -}}
+{{template "challenge-header" .}}
+{{template "challenge-panel" .}}
+
+<section class="stage">
+  <form method="post" action="/classic/field-states" class="stack" data-testid="form">
+    <fieldset>
+      <legend>Three ways to look uneditable</legend>
+      <div class="fields">
+        <div class="field">
+          <label for="readonly">Readonly</label>
+          <input id="readonly" name="readonly" type="text" value="posted anyway" readonly data-testid="field-readonly">
+          <p class="field__note">Takes focus. Cannot be edited. Arrives at the server.</p>
+        </div>
+        <div class="field">
+          <label for="locked">Disabled</label>
+          <input id="locked" name="locked" type="text" value="never sent" disabled data-testid="field-disabled">
+          <p class="field__note">No focus, no edit, and no field in the request at all.</p>
+        </div>
+        <div class="field">
+          <label for="ariaDisabled">aria-disabled</label>
+          <input id="ariaDisabled" name="ariaDisabled" type="text" value="fully editable" aria-disabled="true" data-testid="field-aria-disabled">
+          <p class="field__note">Editable and posted, while announcing itself as disabled.</p>
+        </div>
+      </div>
+    </fieldset>
+
+    <fieldset>
+      <legend>Four ways to name a field, one of them broken</legend>
+      <div class="fields">
+        <div class="field">
+          <label for="withFor">Labelled with for</label>
+          <input id="withFor" name="withFor" type="text" data-testid="field-labelled-for">
+        </div>
+        <div class="field">
+          <label>Labelled by wrapping
+            <input name="wrapped" type="text" data-testid="field-labelled-wrap">
+          </label>
+        </div>
+        <div class="field">
+          <input name="ariaNamed" type="text" aria-label="Labelled with aria-label" data-testid="field-labelled-aria">
+        </div>
+        <div class="field">
+          <input name="unlabelled" type="text" placeholder="Placeholder pretending to be a label" data-testid="field-unlabelled">
+          <p class="field__note">This field has no accessible name. The placeholder disappears the moment you type.</p>
+        </div>
+      </div>
+    </fieldset>
+
+    <div class="actions">
+      <button type="submit" class="primary" data-testid="submit">Submit</button>
+    </div>
+  </form>
+
+  {{with .Data.Latest}}
+  <h2 class="stage__heading">What the server received</h2>
+  <table class="results" data-testid="result">
+    <tbody>
+      <tr><th>fields that arrived</th><td data-testid="result-arrived">{{.Arrived}}</td></tr>
+      <tr><th>readonly</th><td data-testid="result-readonly">{{.Readonly}}</td></tr>
+      <tr><th>ariaDisabled</th><td data-testid="result-aria-disabled">{{.AriaOff}}</td></tr>
+      <tr><th>locked</th><td data-testid="result-locked">{{.Locked}}</td></tr>
+    </tbody>
+  </table>
+  <p class="field__note">
+    <code>locked</code> is missing from the list because a disabled control is not part of
+    the form at all. The other two are indistinguishable from it on screen.
+  </p>
+  {{else}}
+  <p class="empty" data-testid="no-submission">Nothing has been posted yet.</p>
+  {{end}}
+</section>
+{{- end}}

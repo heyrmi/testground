@@ -1,0 +1,75 @@
+{{define "content" -}}
+{{template "challenge-header" .}}
+{{template "challenge-panel" .}}
+
+<section class="stage">
+  <form method="post" action="/classic/choices" class="stack" data-testid="form">
+    <fieldset>
+      <legend>Toppings — one name, three inputs</legend>
+      <label class="choice"><input type="checkbox" name="topping" value="cheese" checked data-testid="topping-cheese"> Cheese</label>
+      <label class="choice"><input type="checkbox" name="topping" value="olives" data-testid="topping-olives"> Olives</label>
+      <label class="choice"><input type="checkbox" name="topping" value="anchovies" data-testid="topping-anchovies"> Anchovies</label>
+    </fieldset>
+
+    <fieldset>
+      <legend>Delivery — a radio group</legend>
+      <label class="choice"><input type="radio" name="delivery" value="standard" data-testid="delivery-standard"> Standard</label>
+      <label class="choice"><input type="radio" name="delivery" value="express" data-testid="delivery-express"> Express</label>
+      <label class="choice"><input type="radio" name="delivery" value="courier" data-testid="delivery-courier"> Courier</label>
+    </fieldset>
+
+    <div class="fields">
+      <div class="field">
+        <label for="country">Country</label>
+        <select id="country" name="country" data-testid="field-country">
+          <option value="">Choose one</option>
+          <optgroup label="Europe">
+            <option value="pt">Portugal</option>
+            <option value="pl">Poland</option>
+            <option value="is" disabled>Iceland — not served</option>
+          </optgroup>
+          <optgroup label="Asia">
+            <option value="jp">Japan</option>
+            <option value="uz">Uzbekistan</option>
+          </optgroup>
+        </select>
+      </div>
+
+      <div class="field">
+        <label for="languages">Languages — pick several</label>
+        <select id="languages" name="languages" multiple size="5" data-testid="field-languages">
+          <option value="ar">Arabic</option>
+          <option value="hi">Hindi</option>
+          <option value="ja">Japanese</option>
+          <option value="pt">Portuguese</option>
+          <option value="sw">Swahili</option>
+        </select>
+      </div>
+    </div>
+
+    <label class="choice"><input type="checkbox" name="newsletter" value="yes" data-testid="field-newsletter"> Send me the newsletter</label>
+
+    <div class="actions">
+      <button type="submit" class="primary" data-testid="submit">Submit</button>
+    </div>
+  </form>
+
+  {{with .Data.Latest}}
+  <h2 class="stage__heading">What the server received</h2>
+  <table class="results" data-testid="result">
+    <tbody>
+      <tr><th>topping</th><td data-testid="result-toppings">{{.Toppings}}</td></tr>
+      <tr><th>delivery</th><td data-testid="result-delivery">{{.Delivery}}</td></tr>
+      <tr><th>country</th><td data-testid="result-country">{{.Country}}</td></tr>
+      <tr><th>languages</th><td data-testid="result-languages">{{.Languages}}</td></tr>
+      <tr><th>newsletter</th><td data-testid="result-newsletter">{{.Newsletter}}</td></tr>
+    </tbody>
+  </table>
+  <p class="field__note">
+    An unchecked checkbox posts nothing at all, which is why its row reads empty rather than "no".
+  </p>
+  {{else}}
+  <p class="empty" data-testid="no-submission">Nothing has been posted yet.</p>
+  {{end}}
+</section>
+{{- end}}
