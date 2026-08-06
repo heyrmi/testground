@@ -14,7 +14,11 @@ import (
 )
 
 // Challenges declares every challenge this zone serves.
-func Challenges() []challenge.Challenge { return nil }
+func Challenges() []challenge.Challenge {
+	return []challenge.Challenge{
+		delayedElement(),
+	}
+}
 
 // Pages serves the SPA shell for every path in the zone. Client routing owns
 // everything below the prefix, so an unmatched path returns the same document
