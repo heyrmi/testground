@@ -19,6 +19,7 @@ func Challenges() []challenge.Challenge {
 		delayedElement(),
 		toast(),
 		virtualList(),
+		optimisticRevert(),
 	}
 }
 
@@ -46,6 +47,8 @@ func Pages(dist fs.FS) http.Handler {
 func API() http.Handler {
 	r := chi.NewRouter()
 	r.Get("/virtual-list/rows", handleVirtualListRows)
+	r.Get("/optimistic-revert/tasks", handleOptimisticTasks)
+	r.Post("/optimistic-revert/tasks/{id}/toggle", handleOptimisticToggle)
 	return r
 }
 

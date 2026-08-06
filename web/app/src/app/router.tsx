@@ -2,6 +2,7 @@ import { createRouter } from '@tanstack/react-router'
 import { indexRoute, rootRoute } from './root'
 import { route as delayedElementRoute } from './challenges/delayed-element'
 import { route as toastRoute } from './challenges/toast'
+import { route as optimisticRevertRoute } from './challenges/optimistic-revert'
 import { route as virtualListRoute } from './challenges/virtual-list'
 
 const routeTree = rootRoute.addChildren([
@@ -9,6 +10,7 @@ const routeTree = rootRoute.addChildren([
   delayedElementRoute,
   toastRoute,
   virtualListRoute,
+  optimisticRevertRoute,
 ])
 
 export const router = createRouter({
