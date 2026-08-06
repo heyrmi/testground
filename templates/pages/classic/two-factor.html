@@ -1,0 +1,68 @@
+{{define "content" -}}
+{{template "challenge-header" .}}
+{{template "challenge-panel" .}}
+
+<section class="stage">
+  {{if .Data.Error}}<p data-testid="login-error"><b>{{.Data.Error}}</b></p>{{end}}
+
+  {{with .Data.Login}}
+    {{if .Pending}}
+    <p data-testid="pending-notice">
+      Password accepted for <b>{{.Username}}</b>. The login is half done until a code arrives.
+    </p>
+    <form method="post" action="/classic/two-factor/code" class="stack" data-testid="code-form">
+      <div class="field">
+        <label for="code">Six-digit code</label>
+        <input id="code" name="code" type="text" inputmode="numeric" autocomplete="one-time-code" data-testid="field-code">
+        <p class="field__note">
+          Read it from <code>/api/control/auth</code>, or compute it from the secret published
+          there. It changes every thirty seconds and follows this session's clock.
+        </p>
+      </div>
+      <div class="actions">
+        <button type="submit" class="primary" data-testid="submit-code">Complete sign-in</button>
+      </div>
+    </form>
+    {{else}}
+    <p data-testid="welcome">Signed in as <b>{{.Name}}</b> ({{.Username}}), role {{.Role}}.</p>
+    <form method="post" action="/classic/two-factor/logout" class="actions">
+      <button type="submit" data-testid="logout">Log out</button>
+    </form>
+    {{end}}
+  {{else}}
+  <form method="post" action="/classic/two-factor" class="stack" data-testid="login-form">
+    <input type="hidden" name="csrf" value="{{.Data.CSRF}}">
+    <div class="fields">
+      <div class="field">
+        <label for="username">Username</label>
+        <input id="username" name="username" type="text" value="twofactor" data-testid="field-username">
+      </div>
+      <div class="field">
+        <label for="password">Password</label>
+        <input id="password" name="password" type="password" data-testid="field-password">
+      </div>
+    </div>
+    <p class="field__note">The <code>twofactor</code> account's password is <code>twofactor123</code>.</p>
+    <div class="actions">
+      <button type="submit" class="primary" data-testid="submit">Sign in</button>
+    </div>
+  </form>
+  {{end}}
+
+  <h2 class="stage__heading">Sign-in link</h2>
+  <form method="post" action="/classic/two-factor/magic" class="actions">
+    <button type="submit" data-testid="send-magic-link">Send a sign-in link</button>
+  </form>
+  <p class="field__note">
+    In a real system this arrives by email. Here it is listed below and published through the
+    control plane, which is the same back channel a real suite would need.
+  </p>
+  {{if .Data.MagicLinks}}
+  <ul class="linklist">
+    {{range $token, $user := .Data.MagicLinks}}
+    <li><a href="/classic/two-factor/magic/{{$token}}" data-testid="magic-link">Sign in as {{$user}}</a></li>
+    {{end}}
+  </ul>
+  {{end}}
+</section>
+{{- end}}

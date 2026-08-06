@@ -76,9 +76,9 @@ your tooling rather than one framework's happy path.
 | Hypermedia | `/hx` | htmx 2, Alpine.js | later |
 | Realtime | `/live` | WebSocket, SSE | later |
 
-## Challenges in v0.4.0
+## Challenges in v0.5.0
 
-Thirty-two pages covering 127 distinct concepts, with 286 documented selectors.
+Thirty-five pages covering 139 distinct concepts.
 Every one is in the manifest, and every one can be made slow, broken or flaky
 through the control plane.
 
@@ -91,6 +91,8 @@ through the control plane.
 | Six things that look like buttons | T1 | Only three post anything — role over appearance |
 | Sliders, colours and native date inputs | T2 | Controls with nothing to type into; an unreachable native dialog |
 | Readonly, disabled and aria-disabled | T2 | Three identical-looking states, three different behaviours |
+| Log in, and everything that guards it | T2 | CSRF, throttles, and server-side logout |
+| A second factor, and a link you cannot read | T3 | Time-based codes cannot be fixtures |
 | Redirect chains, status codes and meta refresh | T2 | 307 keeps your POST method; 303 does not |
 | Error pages that are still pages | T2 | Every content assertion passes on a 500 |
 | Slow to answer, and never finished | T2 | Document ready versus load, and why the default hangs |
@@ -126,6 +128,7 @@ through the control plane.
 | A table that sorts on the server | T3 | Indeterminate is a third state; empty is not slow |
 | Two kinds of dragging | T3 | Native drag is not mouse movement |
 | Menus that need the pointer to stay put | T3 | A double click is also two single clicks |
+| An access token that expires mid-suite | T3 | Move the clock; don't wait sixty seconds |
 
 **Components — `/wc`, Lit and vanilla custom elements**
 
@@ -194,16 +197,15 @@ committed so `go install` produces a working binary; rebuild it with
 
 ## Roadmap
 
-v0.4.0 completes the modern SPA and the web component zones. What follows, in
-order:
+v0.5.0 adds authentication. What follows, in order:
 
-- **v0.5.0** — authentication, including token refresh mid-suite and a
-  self-hosted fake identity provider.
 - **v0.6.0** — realtime.
-- **v0.7.0** — accessibility and mobile, each page shipping an expected-axe-
-  violations fixture so a11y tooling can be validated against known output.
-- **v0.8.0** — hostile locators, performance and scale, visual regression
+- **v0.7.0** — hostile locators, performance and scale, visual regression
   targets, internationalisation.
+- **v0.8.0** — accessibility and mobile, each page shipping an
+  expected-axe-violations fixture so a11y tooling can be validated against
+  known output. Deferred deliberately: doing it properly needs a real
+  accessibility engine, and a half-built one would be worse than none.
 - **v1.0.0** — composite end-to-end scenarios, docs site, Selenium reference
   suite, Docker and Homebrew.
 

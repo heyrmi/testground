@@ -47,6 +47,7 @@ func pages(opts Options) []page {
 		uploads(),
 		downloads(),
 		formLogin(),
+		twoFactor(),
 	}
 	if opts.crossOrigin() {
 		all = append(all, crossOriginFrame(opts))
