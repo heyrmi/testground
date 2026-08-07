@@ -7,6 +7,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.openqa.selenium.By;
 import org.openqa.selenium.Cookie;
+import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.chrome.ChromeDriver;
@@ -70,17 +71,45 @@ abstract class Playground {
     }
 
     /**
-     * Gives this test its own copy of the playground.
+     * Gives this test its own copy of the playground, in its starting state.
      *
      * <p>A cookie cannot be set for a domain the browser is not on, so this
      * loads a cheap page first, replaces the session the server handed out with
      * one named after the test class, and leaves the browser there. Every later
      * navigation carries it.
+     *
+     * <p>The name is derived from the class rather than randomised, which makes
+     * a failing run reproducible and a server-side session inspectable while
+     * you debug it. The cost is that the session outlives the run, so state
+     * from the last one would still be there: a task this suite completed an
+     * hour ago is still complete. Resetting is what makes the id safe to reuse.
      */
     private void pinSession() {
         driver.get(BASE_URL + "/api/health");
         driver.manage().deleteAllCookies();
         driver.manage().addCookie(new Cookie("playground_session", sessionId(), "/"));
+        resetSession();
+    }
+
+    /**
+     * Puts the session back to its seeded state and clears every control-plane
+     * rule.
+     *
+     * <p>Driven from page script because WebDriver has no way to issue a POST
+     * of its own, and because it is a fair demonstration of the control plane:
+     * the cookie is already set, so the request lands in this test's session
+     * and nobody else's.
+     */
+    protected void resetSession() {
+        driver.manage().timeouts().scriptTimeout(TIMEOUT);
+        Object status = ((JavascriptExecutor) driver).executeAsyncScript(
+                "const done = arguments[arguments.length - 1];"
+                        + "fetch('/api/control/reset', { method: 'POST' })"
+                        + "  .then(r => done(r.status))"
+                        + "  .catch(e => done(String(e)));");
+        if (!Long.valueOf(200L).equals(status)) {
+            throw new IllegalStateException("could not reset the session, the playground answered " + status);
+        }
     }
 
     /** A session id unique to this test class, in the character set the server accepts. */

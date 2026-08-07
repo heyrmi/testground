@@ -19,7 +19,7 @@ node_modules/
 /examples/playwright-ts/.playwright/
 
 # Maven
-/examples/selenium-java/target/
+/examples/selenium-java/target*/
 
 # Editors and OS
 .DS_Store

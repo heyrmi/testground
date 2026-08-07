@@ -25,6 +25,7 @@
          reason to be softer here: a playground fixed by a seed should not need
          them, and this suite exists partly to prove that. -->
     <surefire.version>3.5.2</surefire.version>
+    <buildDir>${project.basedir}/target</buildDir>
   </properties>
 
   <dependencies>
@@ -43,6 +44,10 @@
   </dependencies>
 
   <build>
+    <!-- Overridable so two runs can share the checkout without fighting over
+         one target directory: `mvn test -DbuildDir=target-classic`. A CI matrix
+         and anyone working on two batches at once both need it. -->
+    <directory>${buildDir}</directory>
     <plugins>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
