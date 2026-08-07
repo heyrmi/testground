@@ -35,6 +35,25 @@ jobs:
       - run: go test -race ./...
       - run: go build ./...
 
+      # .goreleaser.yaml runs `go mod tidy` as a before-hook, so an untidy
+      # go.mod leaves the release run staring at a dirty tree and aborting.
+      # A tag is the worst place to find that out.
+      - name: Verify go.mod and go.sum are tidy
+        run: |
+          go mod tidy
+          if ! git diff --exit-code -- go.mod go.sum; then
+            echo "go.mod or go.sum is not tidy. Run 'go mod tidy' and commit the result."
+            exit 1
+          fi
+
+      # The release configuration is otherwise only exercised by pushing a tag,
+      # which is public and awkward to take back.
+      - name: Validate the release configuration
+        uses: goreleaser/goreleaser-action@v6
+        with:
+          version: '~> v2'
+          args: check
+
   bundle:
     name: Frontend bundle is current
     runs-on: ubuntu-latest
