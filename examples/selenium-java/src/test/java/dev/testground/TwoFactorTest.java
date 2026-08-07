@@ -12,7 +12,6 @@ import javax.crypto.spec.SecretKeySpec;
 
 import org.junit.jupiter.api.Test;
 import org.openqa.selenium.JavascriptExecutor;
-import org.openqa.selenium.Keys;
 import org.openqa.selenium.WebElement;
 
 /** /classic/two-factor — two flows that cannot be finished from the page, and the back channel that finishes them. */
@@ -143,19 +142,21 @@ class TwoFactorTest extends Playground {
     }
 
     /**
-     * Types a code and submits the form from the keyboard.
+     * Types a code and submits the form it belongs to.
      *
-     * <p>Not by clicking the button, which is the obvious way and the one that
-     * failed. A click is delivered to a pixel: WebDriver scrolls the button into
-     * view and dispatches at its centre, so it depends on where the layout puts
-     * it, and Linux resolves different fonts than macOS and lays the page out
-     * differently. When something ends up over that point the click is reported
-     * as successful and the form is never submitted -- no error, no navigation,
-     * nothing to wait for, and a failure that looks like a refused code.
+     * <p>Two more obvious ways both failed on CI and neither failed here, which
+     * is the useful part. Clicking the button is delivered to a point, so it
+     * depends on where the layout puts it, and Linux resolves different fonts
+     * than macOS: the click was reported as successful and no request was made.
+     * Enter in the field depends instead on the field holding focus at the
+     * instant the key is dispatched, and the server's request log shows three
+     * runs in four where that produced no request either.
      *
-     * <p>Enter in a field submits its form wherever the field happens to be, so
-     * it is both a real user action and one with no geometry in it. The button
-     * is still exercised: ButtonsTest is where clicking one is the subject.
+     * <p>Submitting the form has neither dependency. On a page with no script
+     * this is exactly what pressing the button does -- there is no submit
+     * handler to bypass and nothing to validate -- so the challenge is still
+     * being exercised rather than stepped around. Clicking a button for its own
+     * sake belongs in ButtonsTest, where that is the subject.
      */
     private void enterCode(String code) {
         WebElement field = find("field-code");
@@ -169,7 +170,7 @@ class TwoFactorTest extends Playground {
                 field.getDomProperty("value"),
                 "the code never reached the field, so the submission below proves nothing");
 
-        field.sendKeys(Keys.ENTER);
+        find("code-form").submit();
     }
 
     @SuppressWarnings("unchecked")
