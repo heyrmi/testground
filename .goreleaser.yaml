@@ -44,6 +44,9 @@ checksum:
 # the Dockerfile's release stage only copies it in, and building the arm64
 # image on an amd64 runner needs no emulation because no instruction in that
 # stage is ever executed.
+# `goreleaser check` notes that dockers and docker_manifests are being phased
+# out in favour of dockers_v2. That key is announced but not yet in v2's schema,
+# so writing it now would fail the build rather than pre-empt the migration.
 dockers:
   - id: linux-amd64
     ids: [playground]
