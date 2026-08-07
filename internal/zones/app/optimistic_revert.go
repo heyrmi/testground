@@ -11,6 +11,7 @@ import (
 	"github.com/go-chi/chi/v5"
 
 	"github.com/heyrmi/testground/internal/challenge"
+	"github.com/heyrmi/testground/internal/control"
 	"github.com/heyrmi/testground/internal/httpx"
 	"github.com/heyrmi/testground/internal/session"
 )
@@ -66,6 +67,14 @@ func optimisticRevert() challenge.Challenge {
 				Default: fmt.Sprint(optimisticLatencyMs),
 				Note:    "Milliseconds the toggle endpoint waits before answering, clamped to 0-30000.",
 			},
+			{
+				Name:    "flake",
+				Kind:    "control-plane",
+				Default: "0",
+				Note: "POST /api/control/flake {\"challenge\":\"optimistic-revert\"} refuses that " +
+					"share of toggles the server would otherwise have accepted, so any row " +
+					"can be made to revert rather than only the ones published as locked.",
+			},
 		},
 		Stability: challenge.Stable,
 	}
@@ -112,8 +121,16 @@ func (l *taskList) all() []task {
 }
 
 // toggle flips the task unless the server refuses it, and reports the
-// authoritative row either way so the client can correct itself.
-func (l *taskList) toggle(id int) (updated task, found, accepted bool) {
+// authoritative row either way so the client can correct itself. Refuse forces
+// a refusal for a row the server would otherwise have accepted, and is decided
+// under the same lock so a refused toggle can never half-apply.
+//
+// It is a function rather than a value because a flake decision draws from the
+// session's seeded stream: asking for one before the row is known to exist
+// would let a request for a task id that matches nothing consume a draw and
+// shift every later decision, so the same sequence of real toggles would stop
+// replaying.
+func (l *taskList) toggle(id int, refuse func() bool) (updated task, found, accepted bool) {
 	l.mu.Lock()
 	defer l.mu.Unlock()
 
@@ -121,7 +138,7 @@ func (l *taskList) toggle(id int) (updated task, found, accepted bool) {
 		if l.tasks[i].ID != id {
 			continue
 		}
-		if l.tasks[i].Rejects {
+		if refuse() || l.tasks[i].Rejects {
 			return l.tasks[i], true, false
 		}
 		l.tasks[i].Done = !l.tasks[i].Done
@@ -158,15 +175,32 @@ func handleOptimisticToggle(w http.ResponseWriter, r *http.Request) {
 	}
 
 	sess := session.MustFromContext(r.Context())
-	updated, found, accepted := tasksFor(sess).toggle(id)
+
+	// A flake rule refuses a toggle the server would otherwise have accepted,
+	// so the revert path can be driven on any row rather than only on the ones
+	// the tasks endpoint publishes in advance as locked. That is the case the
+	// page is really about: a row that flips back with nothing having said it
+	// would.
+	//
+	// The decision is deferred into toggle so that it is only made once the row
+	// has been found, which also keeps X-Playground-Flaked off the 404.
+	flaked := false
+	updated, found, accepted := tasksFor(sess).toggle(id, func() bool {
+		flaked = control.Flaked(w, r, "optimistic-revert")
+		return flaked
+	})
 	switch {
 	case !found:
 		httpx.Fail(w, http.StatusNotFound, "no such task")
 	case !accepted:
-		httpx.JSON(w, http.StatusConflict, toggleResponse{
-			Task:   updated,
-			Reason: "this task is locked; the server refuses to change it",
-		})
+		// A row that was going to be refused anyway keeps the reason it has
+		// always given; reporting a flaked refusal as a locked row would send
+		// someone looking for a lock that is not there.
+		reason := "this task is locked; the server refuses to change it"
+		if flaked && !updated.Rejects {
+			reason = "the server refused this toggle on this occasion"
+		}
+		httpx.JSON(w, http.StatusConflict, toggleResponse{Task: updated, Reason: reason})
 	default:
 		httpx.JSON(w, http.StatusOK, toggleResponse{Task: updated, Accepted: true})
 	}

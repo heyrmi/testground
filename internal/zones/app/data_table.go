@@ -2,11 +2,13 @@ package app
 
 import (
 	"net/http"
+	"slices"
 	"sort"
 	"strings"
 	"time"
 
 	"github.com/heyrmi/testground/internal/challenge"
+	"github.com/heyrmi/testground/internal/control"
 	"github.com/heyrmi/testground/internal/fake"
 	"github.com/heyrmi/testground/internal/httpx"
 	"github.com/heyrmi/testground/internal/session"
@@ -66,6 +68,14 @@ func dataTable() challenge.Challenge {
 		Controls: []challenge.Control{
 			{Name: "state", Kind: "query", Default: "", Note: "Force error, or slow, on the rows endpoint."},
 			{Name: "size", Kind: "query", Default: "10", Note: "Rows per page, clamped to 1-100."},
+			{
+				Name:    "flake",
+				Kind:    "control-plane",
+				Default: "0",
+				Note: "POST /api/control/flake {\"challenge\":\"data-table\"} reverses that share of " +
+					"responses while still reporting the sort that was asked for, so refreshing " +
+					"one query answers with two different orders.",
+			},
 		},
 		Stability: challenge.Stable,
 	}
@@ -121,6 +131,15 @@ func handleTableRows(w http.ResponseWriter, r *http.Request) {
 	}
 	if column != "" {
 		sortRows(rows, column, dir)
+	}
+
+	// A flake rule reorders the whole result set while the response still
+	// reports the sort it was asked for, so the same query answers twice with
+	// two different orders. Reversing before paging means the rows on a page
+	// change rather than merely swapping places, which is what makes a test
+	// that asserts on the first row fail on some refreshes and not others.
+	if control.Flaked(w, r, "data-table") {
+		slices.Reverse(rows)
 	}
 
 	size := httpx.QueryInt(r, "size", 10, 1, 100)

@@ -71,6 +71,8 @@ func API() http.Handler {
 	r.Get("/races/search", handleRacesEcho)
 	r.Get("/races/step", handleRacesEcho)
 	r.Get("/table/rows", handleTableRows)
+	r.Get("/visual-regression/state", handleVisualState)
+	r.Get("/hostile-locators/build", handleHostileBuild)
 	r.Get("/shop/catalogue", handleCatalogue)
 	r.Get("/shop/cart", handleCart)
 	r.Post("/shop/cart/items", handleAddToCart)

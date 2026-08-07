@@ -18,10 +18,34 @@ import (
 // operator out of the API that would remove it.
 const Prefix = "/api/control"
 
+// HeaderFlaked names the challenge whose flake rule fired on a request. A
+// refusal a page produces by design and one a flake rule produced are
+// otherwise identical, and a test that cannot tell them apart cannot say which
+// of the two it has just proved.
+const HeaderFlaked = "X-Playground-Flaked"
+
 // For returns the control surface belonging to a session, creating it on first
 // use.
 func For(sess *session.Session) *State {
 	return session.Value(sess, Key, func() *State { return New(sess.RNG) })
+}
+
+// Flaked reports whether the caller has asked this challenge to misbehave on
+// this occasion, and marks the response when it has.
+//
+// It is the form a challenge handler uses. With no rule set it answers false
+// and draws nothing at all, so the handler behind it runs exactly as it did
+// before anyone knew the control plane existed.
+func Flaked(w http.ResponseWriter, r *http.Request, challenge string) bool {
+	sess := session.FromContext(r.Context())
+	if sess == nil {
+		return false
+	}
+	if !For(sess).Flaked(challenge) {
+		return false
+	}
+	w.Header().Set(HeaderFlaked, challenge)
+	return true
 }
 
 // Routes serves the control plane.

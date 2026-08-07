@@ -1,6 +1,19 @@
 package app
 
-import "github.com/heyrmi/testground/internal/challenge"
+import (
+	"net/http"
+
+	"github.com/heyrmi/testground/internal/challenge"
+	"github.com/heyrmi/testground/internal/control"
+	"github.com/heyrmi/testground/internal/httpx"
+	"github.com/heyrmi/testground/internal/session"
+)
+
+// visualDiffFlag turns on the same one pixel that ?diff=1 does. A flag as well
+// as a query parameter means a suite can arm the check for a whole session
+// without rewriting the URLs it already navigates to, which is the difference
+// between proving the comparison can fail and remembering to.
+const visualDiffFlag = "visual-regression.diff"
 
 func visualRegression() challenge.Challenge {
 	return challenge.Challenge{
@@ -39,10 +52,53 @@ func visualRegression() challenge.Challenge {
 			{TestID: "diff-state", Note: "on or off"},
 			{TestID: "freeze-state", Note: "frozen or running"},
 		},
+		Endpoints: []challenge.Endpoint{
+			{Method: http.MethodGet, Path: "/api/app/visual-regression/state", Note: "Resolves the query parameters and the feature flag into the state the page draws"},
+		},
 		Controls: []challenge.Control{
 			{Name: "diff", Kind: "query", Default: "0", Note: "Set to 1 to widen the swatch by one pixel."},
 			{Name: "freeze", Kind: "query", Default: "1", Note: "Set to 0 to let the spinner animate."},
+			{
+				Name:    visualDiffFlag,
+				Kind:    "control-plane",
+				Default: "off",
+				Note: "POST /api/control/feature {\"flag\":\"visual-regression.diff\",\"enabled\":true} " +
+					"widens the swatch for the whole session, the same one pixel ?diff=1 makes.",
+			},
 		},
 		Stability: challenge.Stable,
+	}
+}
+
+// visualState is what the page draws. The two ways of asking for the pixel are
+// resolved here rather than in the browser, so there is one place that decides
+// and a capture taken by a control-plane run matches one taken by a URL run.
+type visualState struct {
+	Diff   bool   `json:"diff"`
+	Freeze bool   `json:"freeze"`
+	Flag   string `json:"flag"`
+}
+
+func handleVisualState(w http.ResponseWriter, r *http.Request) {
+	sess := session.MustFromContext(r.Context())
+
+	httpx.JSON(w, http.StatusOK, visualState{
+		Diff:   queryFlag(r, "diff", false) || control.For(sess).Feature(visualDiffFlag),
+		Freeze: queryFlag(r, "freeze", true),
+		Flag:   visualDiffFlag,
+	})
+}
+
+// queryFlag reads a boolean the way the page's own router does. A value that
+// is neither 1 nor true is off rather than an error, so a mistyped URL still
+// yields a working page and a capture worth comparing.
+func queryFlag(r *http.Request, name string, fallback bool) bool {
+	switch r.URL.Query().Get(name) {
+	case "":
+		return fallback
+	case "1", "true":
+		return true
+	default:
+		return false
 	}
 }

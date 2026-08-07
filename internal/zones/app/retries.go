@@ -6,6 +6,7 @@ import (
 	"sync"
 
 	"github.com/heyrmi/testground/internal/challenge"
+	"github.com/heyrmi/testground/internal/control"
 	"github.com/heyrmi/testground/internal/httpx"
 	"github.com/heyrmi/testground/internal/session"
 )
@@ -55,6 +56,14 @@ func retries() challenge.Challenge {
 		},
 		Controls: []challenge.Control{
 			{Name: "failFirst", Kind: "query", Default: "3", Note: "Calls to refuse before answering, clamped to 0-20."},
+			{
+				Name:    "flake",
+				Kind:    "control-plane",
+				Default: "0",
+				Note: "POST /api/control/flake {\"challenge\":\"retries\"} keeps refusing that share " +
+					"of calls after failFirst is spent, which is the endpoint a fixed attempt " +
+					"budget cannot ride out.",
+			},
 		},
 		Stability: challenge.Stable,
 	}
@@ -89,13 +98,19 @@ func handleRetriesData(w http.ResponseWriter, r *http.Request) {
 	failFirst := httpx.QueryInt(r, "failFirst", 3, 0, 20)
 	attempt := retryCounterFor(sess).next()
 
-	if attempt <= failFirst {
+	// The flake rule is only reached once the budget is spent, so it models the
+	// endpoint that never comes back rather than one that merely refuses more
+	// often. A retry loop with a fixed attempt count cannot ride this out, and
+	// finding that out here is cheaper than finding it out in production.
+	if attempt <= failFirst || control.Flaked(w, r, "retries") {
 		w.Header().Set("Retry-After", "1")
 		httpx.JSON(w, http.StatusServiceUnavailable, map[string]any{
-			"status":    http.StatusServiceUnavailable,
-			"error":     "not ready yet",
-			"attempt":   attempt,
-			"remaining": failFirst - attempt + 1,
+			"status":  http.StatusServiceUnavailable,
+			"error":   "not ready yet",
+			"attempt": attempt,
+			// Past the budget the count would run negative, which reads as a
+			// promise that the endpoint owes the caller failures it does not.
+			"remaining": max(failFirst-attempt+1, 0),
 		})
 		return
 	}

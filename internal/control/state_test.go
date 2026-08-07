@@ -1,10 +1,14 @@
 package control
 
 import (
+	"context"
+	"net/http"
+	"net/http/httptest"
 	"strings"
 	"testing"
 
 	"github.com/heyrmi/testground/internal/rng"
+	"github.com/heyrmi/testground/internal/session"
 )
 
 func newState(seed uint64) *State { return New(rng.New(seed)) }
@@ -228,6 +232,154 @@ func TestASpentRuleDoesNotShadowLaterOnes(t *testing.T) {
 	}
 	if status, _, fail := state.FailureFor("/classic/page"); !fail || status != 500 {
 		t.Fatalf("second call should fall through to the catch-all: status %d fail %v", status, fail)
+	}
+}
+
+// wiredFlakes are the challenges whose handlers ask Flaked what to do, and the
+// misbehaviour each one produces. It is the same list docs/control-plane.md
+// publishes; keeping it here as well means a caller added without being
+// documented shows up as a diff in two places rather than none.
+var wiredFlakes = []struct{ challenge, misbehaviour string }{
+	{"optimistic-revert", "a toggle the server would have accepted is refused, so the row reverts"},
+	{"retries", "the endpoint keeps refusing after its failFirst budget is spent"},
+	{"data-table", "the rows come back reversed while the response still reports the sort asked for"},
+	{"request-races", "the delay a request asked for is dropped, so the two searches land in another order"},
+}
+
+// wiredFeatures are the flags a challenge handler reads, and what each does.
+var wiredFeatures = []struct{ flag, effect string }{
+	{"visual-regression.diff", "the swatch is one pixel wider, the same difference ?diff=1 makes"},
+	{"hostile-locators.rebuild", "every read of the build endpoint ships a new build, renaming every generated class"},
+}
+
+// The guarantee the whole design rests on: a page that nobody has asked to
+// misbehave behaves exactly as it documents. Every one of these handlers calls
+// Flaked on every request, so if an unset rule ever fired the default
+// playground would be the flaky one.
+func TestWiredChallengesAreQuietUntilAsked(t *testing.T) {
+	state := newState(42)
+
+	for _, wired := range wiredFlakes {
+		for i := range 50 {
+			if state.Flaked(wired.challenge) {
+				t.Fatalf("%s flaked on call %d with no rule set: %s",
+					wired.challenge, i+1, wired.misbehaviour)
+			}
+		}
+	}
+	for _, wired := range wiredFeatures {
+		if state.Feature(wired.flag) {
+			t.Errorf("%s was on before anyone set it: %s", wired.flag, wired.effect)
+		}
+	}
+}
+
+func TestWiredChallengesMisbehaveWhenAsked(t *testing.T) {
+	state := newState(42)
+
+	for _, wired := range wiredFlakes {
+		state.SetFlake(FlakeRule{Challenge: wired.challenge, Probability: 1})
+	}
+	for _, wired := range wiredFlakes {
+		if !state.Flaked(wired.challenge) {
+			t.Errorf("%s did not flake at a probability of 1", wired.challenge)
+		}
+	}
+
+	for _, wired := range wiredFeatures {
+		state.SetFeature(wired.flag, true)
+		if !state.Feature(wired.flag) {
+			t.Errorf("%s did not turn on", wired.flag)
+		}
+		state.SetFeature(wired.flag, false)
+		if state.Feature(wired.flag) {
+			t.Errorf("%s did not turn off again", wired.flag)
+		}
+	}
+}
+
+// A handler asks Flaked on every request, including every request made before
+// anyone wanted chaos. Those calls must not consume the seeded stream, or which
+// requests fail would depend on how long the page had been used first -- and a
+// rule that cannot be replayed is worth nothing.
+func TestAnUnsetFlakeRuleDrawsNothing(t *testing.T) {
+	armedFirst := newState(42)
+	armedFirst.SetFlake(FlakeRule{Challenge: "data-table", Probability: 0.5})
+
+	usedFirst := newState(42)
+	for range 25 {
+		if usedFirst.Flaked("data-table") {
+			t.Fatal("flaked with no rule set")
+		}
+	}
+	usedFirst.SetFlake(FlakeRule{Challenge: "data-table", Probability: 0.5})
+
+	for i := range 20 {
+		if want, got := armedFirst.Flaked("data-table"), usedFirst.Flaked("data-table"); got != want {
+			t.Fatalf("draw %d differed: the calls made before the rule existed moved the stream", i)
+		}
+	}
+}
+
+// Four challenges can now be driven chaotically at once, which only stays
+// debuggable if each one's sequence is its own.
+func TestFlakeRulesDoNotInterfereWithEachOther(t *testing.T) {
+	alone := newState(42)
+	alone.SetFlake(FlakeRule{Challenge: "retries", Probability: 0.5})
+
+	crowded := newState(42)
+	for _, wired := range wiredFlakes {
+		crowded.SetFlake(FlakeRule{Challenge: wired.challenge, Probability: 0.5})
+	}
+
+	for i := range 20 {
+		want := alone.Flaked("retries")
+		for _, wired := range wiredFlakes {
+			if wired.challenge != "retries" {
+				crowded.Flaked(wired.challenge)
+			}
+		}
+		if got := crowded.Flaked("retries"); got != want {
+			t.Fatalf("call %d: retries shifted because the other rules fired", i)
+		}
+	}
+}
+
+// The handler-facing form. A refusal a page produces by design and one a flake
+// rule produced are the same status with the same body, so the header is the
+// only thing that tells a tester which of the two they have just proved.
+func TestFlakedMarksTheResponseAndOnlyWhenItFired(t *testing.T) {
+	sess := session.NewStore(session.Options{Seed: 42}).Open("flake-header")
+
+	call := func() (bool, string) {
+		w := httptest.NewRecorder()
+		r := httptest.NewRequest(http.MethodGet, "/api/app/retries/data", nil).
+			WithContext(session.NewContext(context.Background(), sess))
+		return Flaked(w, r, "retries"), w.Header().Get(HeaderFlaked)
+	}
+
+	if flaked, header := call(); flaked || header != "" {
+		t.Fatalf("no rule set, but flaked=%v and the response carried %q", flaked, header)
+	}
+
+	For(sess).SetFlake(FlakeRule{Challenge: "retries", Probability: 1})
+	if flaked, header := call(); !flaked || header != "retries" {
+		t.Fatalf("with a rule set, flaked=%v and the response carried %q", flaked, header)
+	}
+}
+
+// A handler reached without the session middleware -- a unit test, a route
+// mounted outside it -- serves its default rather than panicking. Chaos is the
+// one thing that must never happen by accident.
+func TestFlakedWithoutASessionIsFalse(t *testing.T) {
+	w := httptest.NewRecorder()
+	r := httptest.NewRequest(http.MethodGet, "/api/app/retries/data", nil)
+
+	if Flaked(w, r, "retries") {
+		t.Error("flaked on a request carrying no session")
+	}
+	if header := w.Header().Get(HeaderFlaked); header != "" {
+		t.Errorf("marked the response %q anyway", header)
 	}
 }
 

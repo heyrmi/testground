@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/heyrmi/testground/internal/challenge"
+	"github.com/heyrmi/testground/internal/control"
 	"github.com/heyrmi/testground/internal/httpx"
 	"github.com/heyrmi/testground/internal/session"
 )
@@ -52,6 +53,14 @@ func races() challenge.Challenge {
 		},
 		Controls: []challenge.Control{
 			{Name: "ms", Kind: "query", Default: "0", Note: "Milliseconds to wait before answering, clamped to 0-30000."},
+			{
+				Name:    "flake",
+				Kind:    "control-plane",
+				Default: "0",
+				Note: "POST /api/control/flake {\"challenge\":\"request-races\"} answers that share " +
+					"of requests at once instead of after the delay they asked for, so the two " +
+					"searches land in a different order from one run to the next.",
+			},
 		},
 		Stability: challenge.Stable,
 	}
@@ -59,6 +68,17 @@ func races() challenge.Challenge {
 
 func handleRacesEcho(w http.ResponseWriter, r *http.Request) {
 	delay := httpx.QueryInt(r, "ms", 0, 0, 30_000)
+
+	// A flake rule drops the delay this request asked for, so whichever search
+	// was arranged to lose the race sometimes wins it instead. A race that
+	// always resolves the same way stops being one, and a suite that has only
+	// ever met the losing side has not been shown that it passes either way.
+	// The reported ms is what was actually waited, so the run says which
+	// happened.
+	if control.Flaked(w, r, "request-races") {
+		delay = 0
+	}
+
 	if err := sleep(r.Context(), time.Duration(delay)*time.Millisecond); err != nil {
 		return // the client cancelled, which is the point of one of these
 	}
