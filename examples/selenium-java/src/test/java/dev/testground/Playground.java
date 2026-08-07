@@ -129,10 +129,33 @@ abstract class Playground {
 
     /** Waits for the element to be present and returns it. */
     protected WebElement find(String id) {
-        return wait.until(driver -> {
+        return wait.withMessage(() -> missing(id)).until(driver -> {
             List<WebElement> found = driver.findElements(testId(id));
             return found.isEmpty() ? null : found.get(0);
         });
+    }
+
+    /**
+     * Describes what the page is actually showing, for a wait that ran out.
+     *
+     * <p>The default message names the lambda that failed and nothing else,
+     * which says only that something was not there. Nearly every question worth
+     * asking next is answered by the URL and the test ids that did render: a
+     * form that was never submitted looks exactly like one that was submitted
+     * and refused until you can see which page you are on.
+     */
+    private String missing(String id) {
+        return "no element with data-testid=\"" + id + "\" at " + driver.getCurrentUrl()
+                + "; the page is showing " + renderedTestIds();
+    }
+
+    /** Every test id in the page right now, sorted, for a failure message. */
+    protected List<String> renderedTestIds() {
+        return driver.findElements(By.cssSelector("[data-testid]")).stream()
+                .map(element -> element.getDomAttribute("data-testid"))
+                .distinct()
+                .sorted()
+                .toList();
     }
 
     /** Every element carrying a test id, without waiting: a page may legitimately render none. */
@@ -154,7 +177,9 @@ abstract class Playground {
      * happened to be current.
      */
     protected void waitForText(String id, String expected) {
-        wait.until((ExpectedCondition<Boolean>) d -> {
+        wait.withMessage(() -> "data-testid=\"" + id + "\" never read \"" + expected + "\" at "
+                        + driver.getCurrentUrl() + "; the page is showing " + renderedTestIds())
+                .until((ExpectedCondition<Boolean>) d -> {
             List<WebElement> found = d.findElements(testId(id));
             return !found.isEmpty() && found.get(0).getText().trim().equals(expected);
         });
@@ -162,7 +187,8 @@ abstract class Playground {
 
     /** Waits until at least one element with the test id exists. */
     protected void waitForPresent(String id) {
-        wait.until((ExpectedCondition<Boolean>) d -> !d.findElements(testId(id)).isEmpty());
+        wait.withMessage(() -> missing(id))
+                .until((ExpectedCondition<Boolean>) d -> !d.findElements(testId(id)).isEmpty());
     }
 
     /** Waits until no element with the test id exists. */
