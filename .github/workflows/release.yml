@@ -3,6 +3,15 @@ name: Release
 on:
   push:
     tags: ['v*']
+  # Manual trigger, because a tag push is an event and events can be lost.
+  # During a GitHub Actions outage the pushes for two tags were dropped and
+  # never produced a run at all, which left the only recovery path as deleting
+  # and re-pushing a public tag. This makes that unnecessary next time.
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Tag to release, for example v0.7.0'
+        required: true
 
 permissions:
   contents: write
@@ -14,6 +23,7 @@ jobs:
       - uses: actions/checkout@v5
         with:
           fetch-depth: 0
+          ref: ${{ inputs.tag || github.ref }}
 
       - uses: actions/setup-go@v6
         with:
