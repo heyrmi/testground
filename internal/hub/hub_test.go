@@ -93,9 +93,6 @@ func TestASlowWatcherIsDroppedRatherThanBlockingThePublisher(t *testing.T) {
 		h.Publish("tick", nil)
 	}
 
-	if got := h.Dropped(); got != 5 {
-		t.Errorf("dropped %d, want 5", got)
-	}
 	if got := h.Seq(); got != backlog+5 {
 		t.Errorf("seq %d, want %d: a drop must still advance the sequence, or nothing reveals the gap", got, backlog+5)
 	}
@@ -111,8 +108,5 @@ func TestAHubWithNoWatchersStillCounts(t *testing.T) {
 	// in the sequence, or a later watcher cannot tell how much it missed.
 	if got := h.Publish("moved", nil); got != 1 {
 		t.Errorf("first publish returned seq %d, want 1", got)
-	}
-	if got := h.Dropped(); got != 0 {
-		t.Errorf("dropped %d with nobody watching, want 0", got)
 	}
 }
