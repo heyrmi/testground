@@ -16,13 +16,16 @@ test('the echo is a round trip, so the click and the reply are two events', asyn
 })
 
 test('the ticker pushes with nothing to wait after', async ({ page }) => {
-  await page.goto(`${PAGE}?ms=60`)
+  // count makes the server stop, which is what turns a moving number into a
+  // settled one. Waiting for an exact value on a counter that increments
+  // every sixty milliseconds is a race: the poll can arrive at four and again
+  // at six, and never see five at all. That failed once under full parallel
+  // load, which is exactly when it would.
+  await page.goto(`${PAGE}?ms=60&count=5`)
   await page.getByTestId('ticker-connect').click()
 
-  // Waiting for a count to be reached settles on its own. Sleeping long
-  // enough to be safe would make this the slowest test in the suite.
-  await expect(page.getByTestId('ticker-count')).toHaveText('5', { timeout: 5000 })
-  await expect(page.getByTestId('ticker-state')).toHaveText('open')
+  await expect(page.getByTestId('ticker-count')).toHaveText('5', { timeout: 10_000 })
+  await expect(page.getByTestId('ticker-last-seq')).toHaveText('5')
 })
 
 test('the interval is the caller to choose, so a suite need not run at demo speed', async ({

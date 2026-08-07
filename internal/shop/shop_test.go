@@ -211,3 +211,44 @@ func TestSearchCombinesItsFilters(t *testing.T) {
 		t.Errorf("no filters: %d results, want the whole catalogue", got)
 	}
 }
+
+// The explanation has to survive being read more than once. In the first
+// version it appeared only in the response where the drop happened and was
+// gone on the next read, which is the silent failure this challenge is
+// supposed to expose rather than reproduce.
+func TestTheDroppedCouponExplanationPersists(t *testing.T) {
+	cart := newCart(t)
+	cart.Add("TG-MON-01", 1)
+	cart.ApplyCoupon("BIGSPEND")
+
+	cart.Remove("TG-MON-01")
+	cart.Add("TG-CAB-01", 1)
+
+	first := cart.Totals()
+	if first.CouponNote == "" {
+		t.Fatal("no explanation on the read where the coupon was dropped")
+	}
+
+	if second := cart.Totals(); second.CouponNote != first.CouponNote {
+		t.Fatalf("the explanation vanished on the next read: %q then %q",
+			first.CouponNote, second.CouponNote)
+	}
+}
+
+func TestApplyingAnotherCouponSupersedesTheExplanation(t *testing.T) {
+	cart := newCart(t)
+	cart.Add("TG-MON-01", 1)
+	cart.ApplyCoupon("BIGSPEND")
+	cart.Remove("TG-MON-01")
+	cart.Add("TG-CAB-01", 1)
+
+	if cart.Totals().CouponNote == "" {
+		t.Fatal("expected an explanation to supersede")
+	}
+	cart.ApplyCoupon("SAVE10")
+
+	totals := cart.Totals()
+	if totals.Coupon != "SAVE10" || totals.DiscountCents == 0 {
+		t.Fatalf("the new coupon did not take: %+v", totals)
+	}
+}

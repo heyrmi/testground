@@ -1,0 +1,74 @@
+{{define "content" -}}
+{{template "challenge-header" .}}
+{{template "challenge-panel" .}}
+
+<section class="stage">
+  {{if .Data.Message}}<p data-testid="cart-message"><b>{{.Data.Message}}</b></p>{{end}}
+
+  <p class="stage__label">
+    <b data-testid="cart-count">{{.Data.Count}}</b> item(s), shared with
+    <a href="/app/checkout">the modern zone</a>
+  </p>
+
+  {{if .Data.Items}}
+  <table class="results">
+    <tbody>
+      {{range .Data.Items}}
+      <tr data-testid="cart-line" data-sku="{{.SKU}}">
+        <th>{{.Name}}</th>
+        <td>× {{.Quantity}}</td>
+        <td>{{$.Data.Pounds .LineCents}}</td>
+        <td>
+          <form method="post" action="/classic/cart/remove" style="display:inline">
+            <input type="hidden" name="sku" value="{{.SKU}}">
+            <button type="submit" data-testid="remove-submit">Remove</button>
+          </form>
+        </td>
+      </tr>
+      {{end}}
+    </tbody>
+  </table>
+  {{else}}
+  <p class="empty" data-testid="cart-empty">The cart is empty.</p>
+  {{end}}
+
+  <table class="results" style="margin-top:1rem">
+    <tbody>
+      <tr><th>subtotal</th><td data-testid="subtotal">{{.Data.Pounds .Data.Totals.SubtotalCents}}</td></tr>
+      <tr><th>discount</th><td data-testid="discount">{{.Data.Pounds .Data.Totals.DiscountCents}}</td></tr>
+      <tr><th>shipping</th><td data-testid="shipping">{{.Data.Pounds .Data.Totals.ShippingCents}}</td></tr>
+      <tr><th>total</th><td data-testid="total">{{.Data.Pounds .Data.Totals.TotalCents}}</td></tr>
+      {{if .Data.Totals.Coupon}}
+      <tr><th>coupon</th><td data-testid="coupon">{{.Data.Totals.Coupon}}</td></tr>
+      {{end}}
+    </tbody>
+  </table>
+
+  <h2 class="stage__heading">Add without any script</h2>
+  <form method="post" action="/classic/cart" class="actions" data-testid="add-form">
+    <select name="sku" data-testid="field-sku">
+      {{range .Data.Products}}
+      <option value="{{.SKU}}">{{.Name}} — {{$.Data.Pounds .PriceCents}}{{if eq .Stock 0}} (out of stock){{end}}</option>
+      {{end}}
+    </select>
+    <button type="submit" class="primary" data-testid="add-submit">Add to cart</button>
+  </form>
+
+  <form method="post" action="/classic/cart/clear" class="actions" style="margin-top:.6rem">
+    <button type="submit" data-testid="clear-cart">Empty the cart</button>
+  </form>
+
+  {{if .Data.Orders}}
+  <h2 class="stage__heading">Orders placed in this session</h2>
+  <table class="results">
+    <tbody>
+      {{range .Data.Orders}}
+      <tr data-testid="order-row" data-order="{{.ID}}">
+        <th>{{.ID}}</th><td>{{$.Data.Pounds .Totals.TotalCents}}</td><td>{{.Email}}</td>
+      </tr>
+      {{end}}
+    </tbody>
+  </table>
+  {{end}}
+</section>
+{{- end}}

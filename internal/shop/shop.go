@@ -64,7 +64,12 @@ type Cart struct {
 	mu     sync.Mutex
 	lines  map[string]*Item
 	coupon string
-	orders []Order
+	// dropped remembers that a coupon stopped qualifying. Without it the
+	// explanation would appear only in the one response where the drop
+	// happened and vanish on the next read, which is precisely the silent
+	// failure this challenge exists to make visible.
+	dropped string
+	orders  []Order
 }
 
 // Order is a placed order. It exists only after payment succeeds, and its
@@ -271,6 +276,7 @@ func (c *Cart) ApplyCoupon(code string) error {
 		return ErrBelowMinimum
 	}
 	c.coupon = coupon.Code
+	c.dropped = ""
 	return nil
 }
 
@@ -279,6 +285,7 @@ func (c *Cart) ClearCoupon() {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 	c.coupon = ""
+	c.dropped = ""
 }
 
 func subtotal(items []Item) int {
@@ -314,9 +321,9 @@ func (c *Cart) totalsLocked() Totals {
 		switch {
 		case coupon.MinimumCents > 0 && totals.SubtotalCents < coupon.MinimumCents:
 			// Accepted earlier, no longer earned. Dropping it silently would
-			// be the bug; saying so is the lesson.
+			// be the bug; saying so, and keeping saying so, is the lesson.
 			c.coupon = ""
-			totals.CouponNote = "the coupon no longer applies at this subtotal"
+			c.dropped = coupon.Code + " no longer applies at this subtotal"
 		case coupon.FreeShipping:
 			totals.ShippingCents = 0
 			totals.Coupon = coupon.Code
@@ -326,6 +333,10 @@ func (c *Cart) totalsLocked() Totals {
 			totals.Coupon = coupon.Code
 			totals.CouponNote = coupon.Note
 		}
+	}
+
+	if c.dropped != "" && totals.Coupon == "" {
+		totals.CouponNote = c.dropped
 	}
 
 	totals.TotalCents = totals.SubtotalCents - totals.DiscountCents + totals.ShippingCents
@@ -338,6 +349,7 @@ func (c *Cart) Clear() {
 	defer c.mu.Unlock()
 	c.lines = make(map[string]*Item)
 	c.coupon = ""
+	c.dropped = ""
 }
 
 // Orders lists what this session has placed, newest last.

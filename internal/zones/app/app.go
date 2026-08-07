@@ -36,6 +36,7 @@ func Challenges() []challenge.Challenge {
 		domScale(),
 		internationalisation(),
 		visualRegression(),
+		checkout(),
 	}
 }
 
@@ -70,6 +71,13 @@ func API() http.Handler {
 	r.Get("/races/search", handleRacesEcho)
 	r.Get("/races/step", handleRacesEcho)
 	r.Get("/table/rows", handleTableRows)
+	r.Get("/shop/catalogue", handleCatalogue)
+	r.Get("/shop/cart", handleCart)
+	r.Post("/shop/cart/items", handleAddToCart)
+	r.Delete("/shop/cart/items/{sku}", handleRemoveFromCart)
+	r.Post("/shop/cart/coupon", handleCoupon)
+	r.Post("/shop/checkout", handleCheckout)
+	r.Get("/shop/orders", handleOrders)
 	r.Post("/auth/login", handleAuthLogin)
 	r.Get("/auth/me", handleAuthMe)
 	r.Post("/auth/refresh", handleAuthRefresh)

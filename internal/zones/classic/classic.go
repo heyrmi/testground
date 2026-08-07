@@ -48,6 +48,7 @@ func pages(opts Options) []page {
 		downloads(),
 		formLogin(),
 		twoFactor(),
+		cartFallback(),
 	}
 	if opts.crossOrigin() {
 		all = append(all, crossOriginFrame(opts))

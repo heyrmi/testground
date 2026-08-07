@@ -3,6 +3,7 @@ import { indexRoute, rootRoute } from './root'
 import { route as delayedElementRoute } from './challenges/delayed-element'
 import { route as toastRoute } from './challenges/toast'
 import { route as optimisticRevertRoute } from './challenges/optimistic-revert'
+import { route as checkoutRoute } from './challenges/checkout'
 import { route as dataTableRoute } from './challenges/data-table'
 import { route as domScaleRoute } from './challenges/dom-scale'
 import { route as i18nRoute } from './challenges/internationalisation'
@@ -39,6 +40,7 @@ const routeTree = rootRoute.addChildren([
   domScaleRoute,
   i18nRoute,
   visualRoute,
+  checkoutRoute,
 ])
 
 export const router = createRouter({
