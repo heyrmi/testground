@@ -1,5 +1,7 @@
 package dev.testground;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.time.Duration;
@@ -271,15 +273,36 @@ abstract class Playground {
      * doubled one.
      */
     protected void type(String id, String text) {
-        wait.withMessage(() -> "\"" + text + "\" would not stay in data-testid=\"" + id + "\"")
-                .until(d -> {
-                    WebElement field = find(id);
-                    if (text.equals(field.getDomProperty("value"))) {
-                        return true;
-                    }
-                    field.clear();
-                    field.sendKeys(text);
-                    return text.equals(field.getDomProperty("value"));
-                });
+        WebElement field = find(id);
+        field.clear();
+        field.sendKeys(text);
+        if (text.equals(field.getDomProperty("value"))) {
+            return;
+        }
+
+        // Keystrokes were dropped, so fall back to setting the value the way
+        // Playwright's fill does: assign it and announce the change.
+        //
+        // This is the sharpest difference the two suites have turned up. fill
+        // sets a value; sendKeys types one, and typing can be refused. The
+        // one-time-code field in /classic/two-factor refuses it on headless
+        // Linux and accepts it everywhere this was developed, which is why the
+        // Playwright suite never met the problem at all. Six digits arrived as
+        // five, or as none, and the page then reported a wrong code.
+        //
+        // The events matter: assigning value alone updates the DOM and tells
+        // nothing, so a page listening for input would never hear it. This
+        // page listens for neither -- it is a plain form post -- but a helper
+        // that only works on pages without listeners is a trap to leave lying
+        // around.
+        ((JavascriptExecutor) driver).executeScript(
+                "const [field, value] = arguments;"
+                        + "field.value = value;"
+                        + "field.dispatchEvent(new Event('input', { bubbles: true }));"
+                        + "field.dispatchEvent(new Event('change', { bubbles: true }));",
+                field, text);
+
+        assertEquals(text, field.getDomProperty("value"),
+                "data-testid=\"" + id + "\" would not hold the text, typed or assigned");
     }
 }
