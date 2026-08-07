@@ -26,7 +26,8 @@ port 5173 and proxies the API to a `playground serve` running on 7373.
 4. A hint with the intended approach. Concepts, never framework-specific code.
 5. A manifest entry with tier, tags, concepts and the selectors worth
    locating.
-6. A reference test in `examples/playwright-ts`.
+6. A reference test in **both** `examples/playwright-ts` and
+   `examples/selenium-java`.
 
 Most of these are enforced rather than requested, and it is worth knowing
 which check catches what:
@@ -142,18 +143,29 @@ Anything time-dependent takes a bound from the caller, so the page can be
 driven fast in a suite and slow in a demo. Declare it in `Controls` and clamp
 rather than reject, so a mistyped URL still yields a working page.
 
-### 5. Write the reference test
+### 5. Write the reference tests
 
-Add a spec to `examples/playwright-ts/tests/`. Show the approach that works,
-and where it teaches something, keep one case demonstrating the approach that
-looks like it works and does not.
+Two of them, one per framework. Show the approach that works, and where the
+page teaches something, keep one case demonstrating the approach that looks
+like it works and does not.
 
 ```sh
-cd examples/playwright-ts && npm test
+cd examples/playwright-ts && npm test          # tests/<id>.spec.ts
+cd examples/selenium-java && mvn test          # <PascalCaseId>Test.java
 ```
 
-Retries are off. If your test is flaky, either the test or the challenge is
-wrong — do not paper over it.
+`go test ./...` fails if either is missing, and fails again if one is left
+behind after a challenge is renamed.
+
+Writing both is not busywork. The two tools disagree about what is possible,
+and the disagreement is the interesting part: Playwright refuses to type into
+an `aria-disabled` field while WebDriver types happily, Selenium cannot read a
+response status without CDP, and neither can open a native colour picker.
+Where a lesson cannot survive the crossing, say so in a comment rather than
+writing a test that asserts nothing.
+
+Retries are off in both. If your test is flaky, either the test or the
+challenge is wrong — do not paper over it.
 
 ### 6. Rebuild the bundle
 
@@ -169,6 +181,7 @@ go vet ./...
 go test -race ./...
 make web             # then commit web/app/dist if it changed
 cd examples/playwright-ts && npx tsc --noEmit && npm test
+cd examples/selenium-java && mvn test
 ```
 
 ## Dependencies
