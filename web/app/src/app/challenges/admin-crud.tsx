@@ -177,8 +177,14 @@ function AdminCrud() {
     })
     if (batch.length === 0) return
 
+    // Only the rows that actually left lose their tick. A row skipped above for
+    // being unconfirmed is still in the table, and deselecting it would tell
+    // the reader it had been dealt with when the next bulk delete would have to
+    // find it again.
+    const removed = new Set(batch.map((entry) => entry.account.id))
+
     setRows(kept)
-    setSelected((current) => current.filter((id) => !wanted.has(id)))
+    setSelected((current) => current.filter((id) => !removed.has(id)))
     setEditing((current) => (current !== null && wanted.has(current) ? null : current))
     stashBin(batch)
 

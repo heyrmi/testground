@@ -156,6 +156,14 @@ function Autosave() {
     return () => window.removeEventListener('beforeunload', guard)
   }, [inFlight])
 
+  useEffect(() => {
+    // The refusal describes a moment, not a state. The beforeunload guard comes
+    // off when the write settles and the next click goes straight through, so a
+    // notice left on screen would be telling a reader the link is still blocked
+    // while it is not.
+    if (!inFlight) setBlocked(false)
+  }, [inFlight])
+
   async function runOtherWriter() {
     const res = await fetch('/api/app/autosave/other-writer', { method: 'POST' })
     const body = (await res.json()) as { record: RecordView }
