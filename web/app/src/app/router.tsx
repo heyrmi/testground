@@ -19,6 +19,10 @@ import { route as racesRoute } from './challenges/request-races'
 import { route as tokenRefreshRoute } from './challenges/token-refresh'
 import { route as retriesRoute } from './challenges/retries'
 import { route as virtualListRoute } from './challenges/virtual-list'
+import { route as wizardRoute } from './challenges/wizard'
+import { route as autosaveRoute } from './challenges/autosave'
+import { route as adminCrudRoute } from './challenges/admin-crud'
+import { route as kanbanRoute } from './challenges/kanban'
 
 const routeTree = rootRoute.addChildren([
   indexRoute,
@@ -41,6 +45,10 @@ const routeTree = rootRoute.addChildren([
   i18nRoute,
   visualRoute,
   checkoutRoute,
+  wizardRoute,
+  autosaveRoute,
+  adminCrudRoute,
+  kanbanRoute,
 ])
 
 export const router = createRouter({

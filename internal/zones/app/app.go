@@ -37,6 +37,10 @@ func Challenges() []challenge.Challenge {
 		internationalisation(),
 		visualRegression(),
 		checkout(),
+		wizard(),
+		autosave(),
+		adminCRUD(),
+		kanban(),
 	}
 }
 
@@ -80,6 +84,20 @@ func API() http.Handler {
 	r.Post("/shop/cart/coupon", handleCoupon)
 	r.Post("/shop/checkout", handleCheckout)
 	r.Get("/shop/orders", handleOrders)
+	r.Get("/wizard/draft", handleWizardDraft)
+	r.Post("/wizard/draft", handleWizardRecordStep)
+	r.Post("/wizard/submit", handleWizardSubmit)
+	r.Get("/autosave/record", handleAutosaveRecord)
+	r.Put("/autosave/record", handleAutosaveWrite)
+	r.Post("/autosave/other-writer", handleAutosaveOtherWriter)
+	r.Get("/admin-crud/accounts", handleAdminAccounts)
+	r.Post("/admin-crud/accounts", handleAdminCreate)
+	r.Patch("/admin-crud/accounts/{id}", handleAdminUpdate)
+	r.Delete("/admin-crud/accounts/{id}", handleAdminDelete)
+	r.Get("/kanban/board", handleKanbanBoard)
+	r.Post("/kanban/moves", handleKanbanMove)
+	r.Post("/kanban/queue", handleKanbanQueue)
+	r.Get("/kanban/socket", handleKanbanSocket)
 	r.Post("/auth/login", handleAuthLogin)
 	r.Get("/auth/me", handleAuthMe)
 	r.Post("/auth/refresh", handleAuthRefresh)
