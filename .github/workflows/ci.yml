@@ -109,3 +109,44 @@ jobs:
           name: playwright-traces
           path: examples/playwright-ts/test-results/
           retention-days: 7
+
+  selenium:
+    name: Selenium reference suite
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-go@v6
+        with:
+          go-version: ${{ env.GO_VERSION }}
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: maven
+
+      # Unlike the Playwright suite, which starts the server itself through
+      # playwright.config.ts, Maven has no equivalent hook. The server is
+      # started here and waited for, rather than slept on: a fixed sleep is the
+      # exact mistake half these challenges exist to teach.
+      - name: Start the playground
+        run: |
+          go run ./cmd/playground serve --addr 127.0.0.1:7373 --log-level warn &
+          for _ in $(seq 1 60); do
+            if curl -fsS http://127.0.0.1:7373/api/health >/dev/null 2>&1; then
+              exit 0
+            fi
+            sleep 1
+          done
+          echo "the playground never became healthy"
+          exit 1
+
+      # Selenium Manager fetches a driver matching the runner's Chrome.
+      - run: mvn -B test
+        working-directory: examples/selenium-java
+
+      - uses: actions/upload-artifact@v5
+        if: failure()
+        with:
+          name: surefire-reports
+          path: examples/selenium-java/target/surefire-reports/
+          retention-days: 7
