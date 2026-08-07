@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <groupId>dev.testground</groupId>
+  <artifactId>selenium-reference</artifactId>
+  <version>1.0.0-SNAPSHOT</version>
+  <packaging>jar</packaging>
+
+  <name>testground Selenium reference suite</name>
+  <description>
+    Worked solutions to every challenge, in Selenium and JUnit 5. The companion
+    to examples/playwright-ts: the same challenges, solved with a different tool,
+    so the playground is not accidentally shaped around one framework's idioms.
+  </description>
+
+  <properties>
+    <maven.compiler.release>21</maven.compiler.release>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <selenium.version>4.27.0</selenium.version>
+    <junit.version>5.11.4</junit.version>
+    <!-- Retries are off in the Playwright suite on purpose and there is no
+         reason to be softer here: a playground fixed by a seed should not need
+         them, and this suite exists partly to prove that. -->
+    <surefire.version>3.5.2</surefire.version>
+  </properties>
+
+  <dependencies>
+    <dependency>
+      <groupId>org.seleniumhq.selenium</groupId>
+      <artifactId>selenium-java</artifactId>
+      <version>${selenium.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter</artifactId>
+      <version>${junit.version}</version>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
+
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <version>${surefire.version}</version>
+        <configuration>
+          <!-- One class per challenge, run in parallel. Every class pins its
+               own session, so parallel classes cannot see each other's state.
+               That is the same property the Playwright suite relies on, and it
+               is worth exercising from a second client. -->
+          <parallel>classes</parallel>
+          <threadCount>4</threadCount>
+          <argLine>-Djava.util.logging.config.file=${project.basedir}/src/test/resources/logging.properties</argLine>
+          <systemPropertyVariables>
+            <playground.baseUrl>${playground.baseUrl}</playground.baseUrl>
+            <playground.headless>${playground.headless}</playground.headless>
+          </systemPropertyVariables>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+
+  <profiles>
+    <profile>
+      <id>defaults</id>
+      <activation>
+        <activeByDefault>true</activeByDefault>
+      </activation>
+      <properties>
+        <playground.baseUrl>http://127.0.0.1:7373</playground.baseUrl>
+        <playground.headless>true</playground.headless>
+      </properties>
+    </profile>
+  </profiles>
+</project>
