@@ -156,6 +156,21 @@ func validate(c Challenge) error {
 		if strings.TrimSpace(s.Note) == "" {
 			fail("selector %q needs a note saying what it is", s.TestID)
 		}
+		if s.Family == "" {
+			continue
+		}
+		// A family that names no placeholder matches one id, so it is a second
+		// spelling of TestID rather than a family, and a representative that is
+		// not itself a member means the pattern describes something other than
+		// what was declared. Either way the contract check would quietly stop
+		// covering the members it was written for.
+		pattern, ok := FamilyPattern(s.Family)
+		switch {
+		case !ok:
+			fail("selector %q has family %q with no <n> or <s> placeholder", s.TestID, s.Family)
+		case !pattern.MatchString(s.TestID):
+			fail("selector %q is not itself a member of its family %q", s.TestID, s.Family)
+		}
 	}
 
 	return errors.Join(problems...)

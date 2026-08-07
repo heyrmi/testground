@@ -126,3 +126,56 @@ func TestManifestReportsTheCallersSeed(t *testing.T) {
 		t.Fatalf("manifest advertised %d zones, want only the populated one", len(m.Zones))
 	}
 }
+
+func TestSelectorFamilyCoversItsMembers(t *testing.T) {
+	cases := []struct {
+		family, testID string
+		covers         bool
+	}{
+		{"otp-<n>", "otp-3", true},
+		{"otp-<n>", "otp-", false},
+		{"otp-<n>", "otp-3x", false},
+		{"locale-<s>", "locale-ar-EG", true},
+		{"locale-<s>", "locale-de-DE", true},
+		{"locale-<s>", "localear", false},
+		{"status-link-<n>", "status-link-418", true},
+		{"status-link-<n>", "status-link-teapot", false},
+		{"row-<s>", "row-amount", true},
+		{"row-<s>", "rows", false},
+	}
+
+	for _, c := range cases {
+		// The representative is deliberately not the id under test, so a match
+		// can only have come from the family.
+		s := Selector{TestID: "unrelated", Family: c.family, Note: "n/a"}
+		if got := s.Covers(c.testID); got != c.covers {
+			t.Errorf("family %q covers %q = %v, want %v", c.family, c.testID, got, c.covers)
+		}
+	}
+}
+
+func TestSelectorWithoutFamilyCoversOnlyItself(t *testing.T) {
+	s := Selector{TestID: "otp-0", Note: "n/a"}
+	if !s.Covers("otp-0") {
+		t.Error("a selector does not cover its own test id")
+	}
+	if s.Covers("otp-1") {
+		t.Error("a selector with no family covered a neighbour, which would hide an undeclared element")
+	}
+}
+
+func TestFamilyMustNameAPlaceholderAndIncludeItsOwnSelector(t *testing.T) {
+	for _, family := range []string{"otp-box", "field-<n>"} {
+		c := valid()
+		c.Selectors = []Selector{{TestID: "otp-0", Family: family, Note: "First box"}}
+		if _, err := NewRegistry([]Challenge{c}); err == nil {
+			t.Errorf("registry accepted family %q on selector otp-0", family)
+		}
+	}
+
+	c := valid()
+	c.Selectors = []Selector{{TestID: "otp-0", Family: "otp-<n>", Note: "First box"}}
+	if _, err := NewRegistry([]Challenge{c}); err != nil {
+		t.Errorf("registry rejected a well-formed family: %v", err)
+	}
+}

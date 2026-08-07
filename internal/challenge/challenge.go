@@ -7,6 +7,11 @@
 // promises to ship with every page.
 package challenge
 
+import (
+	"regexp"
+	"strings"
+)
+
 // Tier grades how hard a challenge is to automate.
 type Tier string
 
@@ -91,6 +96,79 @@ type Selector struct {
 	// element that lives in a nested browsing context rather than in the top
 	// document. A locator that does not enter these frames will never find it.
 	Frame []string `json:"frame,omitempty"`
+	// Family names a repeated set this selector is one representative of, as a
+	// pattern: <n> stands for a run of digits and <s> for a run of word
+	// characters, so "otp-<n>" covers otp-0 through otp-5.
+	//
+	// A page that renders six identical boxes is worth declaring once, not six
+	// times, and listing every index would turn the manifest from the elements
+	// worth locating into an inventory of the DOM. Naming the shape instead
+	// keeps the declaration short and still says exactly what exists, which is
+	// what lets a generated page object offer an indexed accessor and a
+	// contract check tell a member of a known family from an element nobody
+	// declared.
+	Family string `json:"family,omitempty"`
+}
+
+// familyPlaceholders expands a Family pattern. Everything outside a placeholder
+// is matched literally, so a pattern cannot accidentally become a wildcard
+// through a character that happens to mean something to a regexp.
+var familyPlaceholders = map[string]string{
+	"<n>": `[0-9]+`,
+	"<s>": `[A-Za-z0-9_-]+`,
+}
+
+// FamilyPattern compiles a Family into an anchored expression. It reports
+// whether the pattern named any placeholder at all: one that names none matches
+// only itself, which means the author wrote a second spelling of TestID rather
+// than a family.
+func FamilyPattern(family string) (*regexp.Regexp, bool) {
+	var (
+		expanded strings.Builder
+		found    bool
+		rest     = family
+	)
+	for rest != "" {
+		next, name := nextPlaceholder(rest)
+		expanded.WriteString(regexp.QuoteMeta(rest[:next]))
+		if name == "" {
+			break
+		}
+		expanded.WriteString(familyPlaceholders[name])
+		found = true
+		rest = rest[next+len(name):]
+	}
+
+	pattern, err := regexp.Compile(`\A` + expanded.String() + `\z`)
+	if err != nil {
+		return nil, false
+	}
+	return pattern, found
+}
+
+// nextPlaceholder finds the first placeholder in s, returning where it starts
+// and which one it is. An empty name means there are none left.
+func nextPlaceholder(s string) (at int, name string) {
+	at, name = len(s), ""
+	for placeholder := range familyPlaceholders {
+		if i := strings.Index(s, placeholder); i >= 0 && i < at {
+			at, name = i, placeholder
+		}
+	}
+	return at, name
+}
+
+// Covers reports whether a rendered test id is this selector, or a member of
+// the family it represents.
+func (s Selector) Covers(testID string) bool {
+	if s.TestID == testID {
+		return true
+	}
+	if s.Family == "" {
+		return false
+	}
+	pattern, ok := FamilyPattern(s.Family)
+	return ok && pattern.MatchString(testID)
 }
 
 // Endpoint is an HTTP route the challenge's page talks to. Listing them lets a

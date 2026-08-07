@@ -37,12 +37,30 @@ which check catches what:
 | 2 | `manifest.spec.ts` | Every declared selector is looked up in the live DOM |
 | 6 | `internal/playground/coverage_test.go` | `go test ./...` |
 
-Rule 2 is checked in the direction that matters: a selector you declare but do
-not render fails the suite. Whether you declared *enough* of them is still a
-review question. If an element only exists during an interaction, mark it
-`Transient: true` — that exempts it from the presence check, and the suite
-then asserts it is genuinely absent on load, so the flag cannot be used to
-paper over a missing element.
+Rule 2 is checked in both directions. A selector you declare but do not render
+fails the suite, and so does a `data-testid` you render but never declare —
+the second is how an element grows a contract that exists in the markup and
+nowhere a reader would look for it.
+
+If an element only exists during an interaction, mark it `Transient: true` —
+that exempts it from the presence check, and the suite then asserts it is
+genuinely absent on load, so the flag cannot be used to paper over a missing
+element.
+
+A page that renders a repeated set declares one representative and names the
+shape, rather than listing every index:
+
+```go
+{TestID: "otp-0", Family: "otp-<n>", Note: "First box; each is otp-<index>, zero based"}
+```
+
+`<n>` stands for a run of digits and `<s>` for a run of word characters. The
+representative has to be a member of its own family, and a family that names
+no placeholder is rejected — it would be a second spelling of the test id
+rather than a family. Reach for it only when the set really is repeated: two
+or three siblings with different meanings are worth declaring individually,
+and a family broad enough to swallow an unrelated element has stopped
+checking anything.
 
 Beyond those, two rules matter just as much and neither can be automated:
 
