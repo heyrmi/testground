@@ -43,6 +43,7 @@ on every run and every machine.`),
 		newServeCommand(&logs),
 		newSeedCommand(),
 		newManifestCommand(),
+		newScaffoldCommand(),
 		newVersionCommand(),
 	)
 
