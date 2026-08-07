@@ -19,7 +19,7 @@ class DragAndDropTest extends Playground {
         open(PAGE);
         waitForText("delivered-count", "0");
 
-        new Actions(driver).dragAndDrop(driver.findElement(parcel("crate")), find("dropzone")).perform();
+        new Actions(driver).dragAndDrop(find(parcel("crate")), find("dropzone")).perform();
 
         waitForText("delivered-count", "1");
         assertEquals(1, driver.findElements(delivered("crate")).size());
@@ -72,7 +72,7 @@ class DragAndDropTest extends Playground {
     @Test
     void whetherAMouseSequenceCountsAsADragIsTheDriversAnswer() {
         open(PAGE);
-        WebElement letter = driver.findElement(parcel("letter"));
+        WebElement letter = find(parcel("letter"));
 
         new Actions(driver)
                 .moveToElement(letter)
@@ -98,7 +98,7 @@ class DragAndDropTest extends Playground {
         int position = Integer.parseInt(text("handle-position"));
         assertTrue(position > 40 && position < 60, "the handle should have followed the pointer to the middle of the rail, not to " + position);
 
-        new Actions(driver).dragAndDrop(driver.findElement(parcel("parcel")), find("dropzone")).perform();
+        new Actions(driver).dragAndDrop(find(parcel("parcel")), find("dropzone")).perform();
         waitForText("delivered-count", "1");
     }
 
@@ -116,7 +116,7 @@ class DragAndDropTest extends Playground {
 
         // The drop zone reads the parcel straight out of the dataTransfer, so
         // four dispatched events are all it ever needed.
-        dispatchDragInOneTask(driver.findElement(parcel("crate")), find("dropzone"));
+        dispatchDragInOneTask(find(parcel("crate")), find("dropzone"));
         waitForText("delivered-count", "1");
 
         // The list is not so easy. It records what was picked up in component
@@ -178,7 +178,7 @@ class DragAndDropTest extends Playground {
     }
 
     private WebElement sortableItem(String name) {
-        return driver.findElement(
+        return find(
                 By.cssSelector("[data-testid='sortable-item'][data-name='" + name + "']"));
     }
 }

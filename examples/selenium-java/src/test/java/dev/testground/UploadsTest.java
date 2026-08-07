@@ -139,7 +139,7 @@ class UploadsTest extends Playground {
 
     /** The result row the server rendered for one uploaded file. */
     private WebElement uploadRow(String name) {
-        return driver.findElement(By.cssSelector("[data-testid='upload-row'][data-name='" + name + "']"));
+        return find(By.cssSelector("[data-testid='upload-row'][data-name='" + name + "']"));
     }
 
     /** Writes a file of the given size and returns the absolute path a file input needs. */

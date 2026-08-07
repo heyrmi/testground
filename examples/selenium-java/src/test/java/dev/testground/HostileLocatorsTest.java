@@ -54,7 +54,7 @@ class HostileLocatorsTest extends Playground {
         // findElement returns the first of the two. Whichever one your tool
         // picks, it picked -- and it will keep picking it until someone reorders
         // the markup.
-        driver.findElement(By.id("duplicate")).click();
+        find(By.id("duplicate")).click();
         waitForText("chosen", "first-duplicate");
     }
 

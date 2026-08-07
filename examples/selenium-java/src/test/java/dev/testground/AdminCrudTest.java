@@ -52,7 +52,7 @@ class AdminCrudTest extends Playground {
         click("create-account");
 
         waitForCount(OPTIMISTIC_ROWS, 1);
-        assertEquals("creating", driver.findElement(OPTIMISTIC_ROWS).findElement(testId("account-state")).getText());
+        assertEquals("creating", find(OPTIMISTIC_ROWS).findElement(testId("account-state")).getText());
 
         // Settling is what makes the next assertion mean anything.
         waitForText("in-flight", "0");

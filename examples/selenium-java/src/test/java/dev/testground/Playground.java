@@ -14,6 +14,7 @@ import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
+import org.openqa.selenium.remote.LocalFileDetector;
 import org.openqa.selenium.remote.RemoteWebDriver;
 import org.openqa.selenium.support.ui.ExpectedCondition;
 import org.openqa.selenium.support.ui.WebDriverWait;
@@ -126,7 +127,13 @@ abstract class Playground {
 
     private WebDriver remote(ChromeOptions options) {
         try {
-            return new RemoteWebDriver(URI.create(REMOTE_URL).toURL(), options);
+            RemoteWebDriver remote = new RemoteWebDriver(URI.create(REMOTE_URL).toURL(), options);
+            // The browser is on the far side of the connection and cannot open a
+            // path on this machine. The detector ships the file across with the
+            // sendKeys that names it, which is what makes the upload challenge
+            // work against a grid at all.
+            remote.setFileDetector(new LocalFileDetector());
+            return remote;
         } catch (MalformedURLException e) {
             throw new IllegalArgumentException("playground.remoteUrl is not a URL: " + REMOTE_URL, e);
         }
@@ -153,6 +160,27 @@ abstract class Playground {
             List<WebElement> found = driver.findElements(testId(id));
             return found.isEmpty() ? null : found.get(0);
         });
+    }
+
+    /**
+     * Waits for an arbitrary locator, for the elements a test id alone cannot
+     * reach -- a row picked out by a data attribute, or markup on a page that
+     * withholds test ids on purpose.
+     *
+     * <p>Prefer this to {@code driver.findElement}, which throws the moment it
+     * does not find something. The SPA zone renders after the document is done,
+     * so an immediate lookup asks a page that has not been built yet: it
+     * succeeds on a fast machine and throws NoSuchElementException on a loaded
+     * one. An implicit wait would fix that and break something worse, since
+     * every assertion that a thing is absent would then pay the full timeout.
+     */
+    protected WebElement find(By by) {
+        return wait.withMessage(() -> "nothing matched " + by + " at " + driver.getCurrentUrl()
+                        + "; the page is showing " + renderedTestIds())
+                .until(driver -> {
+                    List<WebElement> found = driver.findElements(by);
+                    return found.isEmpty() ? null : found.get(0);
+                });
     }
 
     /**

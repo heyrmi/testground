@@ -44,7 +44,7 @@ class ChoicesTest extends Playground {
         // value. This returns the value attribute of the first input carrying
         // the name, which is "cheese" even though cheese is now the only box
         // that is NOT ticked. The request is the only honest source.
-        WebElement firstNamedTopping = driver.findElement(By.name("topping"));
+        WebElement firstNamedTopping = find(By.name("topping"));
         assertEquals("cheese", firstNamedTopping.getDomProperty("value"));
         assertFalse(firstNamedTopping.isSelected());
 

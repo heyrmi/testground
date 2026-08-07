@@ -87,7 +87,7 @@ class ToastTest extends Playground {
         // apart rather than reaching for the first match.
         assertEquals(
                 "Saved change #2",
-                driver.findElement(By.cssSelector("[data-testid='toast'][data-sequence='2']")).getText().trim());
+                find(By.cssSelector("[data-testid='toast'][data-sequence='2']")).getText().trim());
         assertEquals(1, driver.findElements(By.cssSelector("[data-testid='toast'][data-sequence='1']")).size());
     }
 

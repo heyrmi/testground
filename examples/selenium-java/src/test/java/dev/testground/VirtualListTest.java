@@ -57,7 +57,7 @@ class VirtualListTest extends Playground {
         scrollViewportTo(LAST * ROW_HEIGHT);
 
         waitForRow(LAST);
-        assertEquals("09999", driver.findElement(rowAt(LAST)).findElement(testId("row-index")).getText().trim());
+        assertEquals("09999", find(rowAt(LAST)).findElement(testId("row-index")).getText().trim());
     }
 
     @Test

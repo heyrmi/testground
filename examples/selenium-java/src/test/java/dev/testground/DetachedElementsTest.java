@@ -26,7 +26,7 @@ class DetachedElementsTest extends Playground {
     void aReferenceTakenBeforeARebuildIsDetachedAfterIt() {
         open(PAGE + "?churnMs=200");
 
-        WebElement charlie = driver.findElement(row("charlie"));
+        WebElement charlie = find(row("charlie"));
         click("toggle-churn");
         assertEquals("true", find("toggle-churn").getAttribute("data-churning"));
         waitForGenerationToAdvance();

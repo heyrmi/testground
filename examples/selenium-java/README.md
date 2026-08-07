@@ -60,3 +60,30 @@ the published contract, and `playground manifest` prints them:
 ```sh
 go run ./cmd/playground manifest | jq '.challenges[] | select(.id=="toast") | .selectors'
 ```
+
+## Running against a container
+
+`-Dplayground.remoteUrl` points the suite at a Selenium Grid instead of a local
+Chrome, which pins the browser and the operating system. A failure that only
+happens on CI can then be reproduced without pushing a commit to find out —
+which is exactly how the two-factor and hostile-locator failures above were
+diagnosed.
+
+```sh
+docker run -d --name grid -p 4444:4444 --shm-size=2g seleniarm/standalone-chromium
+go run ./cmd/playground serve --addr 0.0.0.0:7373        # reachable from the container
+
+mvn test -Dplayground.remoteUrl=http://127.0.0.1:4444 \
+         -Dplayground.baseUrl=http://host.docker.internal:7373
+```
+
+Two classes do not pass in this mode, and neither is a defect:
+
+- `DownloadsTest` casts the driver to `ChromeDriver` to set the download
+  directory over CDP, and a remote driver is not one. Downloads would also land
+  inside the container rather than where the test is looking.
+- `ClosedShadowTest` depends on how a specific browser version treats a closed
+  shadow root, which is the challenge's whole subject.
+
+Uploads do work: the grid driver gets a `LocalFileDetector`, so the file is
+shipped across with the `sendKeys` that names it.
