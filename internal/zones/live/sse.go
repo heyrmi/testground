@@ -22,11 +22,20 @@ func openStream(w http.ResponseWriter) (*http.ResponseController, bool) {
 	w.Header().Set("X-Accel-Buffering", "no")
 
 	controller := http.NewResponseController(w)
+	// The first flush implicitly commits a 200, so the status has to go out
+	// ahead of it. The other order left every connection logging a superfluous
+	// response.WriteHeader call, with the explicit status silently discarded.
+	w.WriteHeader(http.StatusOK)
+
+	// Flushed immediately so the headers above reach the client before the
+	// first event does, which is what stops a buffering proxy from holding the
+	// whole stream back. A writer chain with no flusher underneath also shows
+	// up here, and the status is already committed by then, so the only way
+	// left to report it is in the body the client is reading.
 	if err := controller.Flush(); err != nil {
-		http.Error(w, "streaming is not supported here", http.StatusInternalServerError)
+		fmt.Fprint(w, "event: error\ndata: streaming is not supported here\n\n")
 		return nil, false
 	}
-	w.WriteHeader(http.StatusOK)
 	return controller, true
 }
 
