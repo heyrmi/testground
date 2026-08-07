@@ -45,7 +45,7 @@ class HostileLocatorsTest extends Playground {
         // Invalid HTML the browser accepts in silence. Selenium's By.id is a CSS
         // id selector underneath, so it sees both; the DOM's own getElementById
         // sees one. Neither is wrong, which is the problem.
-        assertEquals(2, driver.findElements(By.id("duplicate")).size());
+        assertEquals(2, waitForAtLeast(By.id("duplicate"), 2).size());
         assertEquals(
                 1L,
                 ((JavascriptExecutor) driver).executeScript(
@@ -114,7 +114,7 @@ class HostileLocatorsTest extends Playground {
         // Selenium has no locator for an accessible name, so the closest thing
         // to Playwright's getByRole is the text on the button -- and it matches
         // both, because same text, same class, same everything.
-        List<WebElement> twins = driver.findElements(By.xpath("//button[normalize-space()='Continue']"));
+        List<WebElement> twins = waitForAtLeast(By.xpath("//button[normalize-space()='Continue']"), 2);
         assertEquals(2, twins.size());
 
         // Nothing distinguishes them but order. Using that works, and is a note
@@ -132,7 +132,7 @@ class HostileLocatorsTest extends Playground {
         // Every wrapper contains the word, so a contains match finds the
         // outermost one -- twelve levels above the element that does anything.
         assertTrue(
-                driver.findElements(By.xpath("//div[contains(., 'Approve')]")).size() >= 13,
+                waitForAtLeast(By.xpath("//div[contains(., 'Approve')]"), 13).size() >= 13,
                 "the wrappers have gone, so matching on subtree text is no longer ambiguous");
 
         // Only the leaf holds it as its own text node. That is the whole of the
@@ -145,5 +145,23 @@ class HostileLocatorsTest extends Playground {
 
         leaf.get(0).click();
         waitForText("chosen", "div-soup");
+    }
+
+    /**
+     * Waits until a raw locator matches at least {@code atLeast} elements.
+     *
+     * <p>This page is React, so open() returns on the document and the markup
+     * arrives afterwards. findElements answers with an empty list rather than
+     * retrying, so asserting on its size straight after a navigation asserts on
+     * whatever had rendered by then -- which is everything on a fast machine and
+     * nothing on a loaded one. The test ids elsewhere in this class hide the
+     * problem because find() already waits; the challenge withholds them here,
+     * which is exactly where the waiting has to be done by hand.
+     */
+    private List<WebElement> waitForAtLeast(By by, int atLeast) {
+        return wait.until(d -> {
+            List<WebElement> found = d.findElements(by);
+            return found.size() >= atLeast ? found : null;
+        });
     }
 }
