@@ -19,8 +19,8 @@
   <properties>
     <maven.compiler.release>21</maven.compiler.release>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <selenium.version>4.27.0</selenium.version>
-    <junit.version>5.11.4</junit.version>
+    <selenium.version>4.46.0</selenium.version>
+    <junit.version>6.1.3</junit.version>
     <!-- Retries are off in the Playwright suite on purpose and there is no
          reason to be softer here: a playground fixed by a seed should not need
          them, and this suite exists partly to prove that. -->
@@ -58,9 +58,9 @@
                own session, so parallel classes cannot see each other's state.
                That is the same property the Playwright suite relies on, and it
                is worth exercising from a second client. -->
+          <argLine>-Djava.util.logging.config.file=${project.basedir}/src/test/resources/logging.properties</argLine>
           <parallel>classes</parallel>
           <threadCount>4</threadCount>
-          <argLine>-Djava.util.logging.config.file=${project.basedir}/src/test/resources/logging.properties</argLine>
           <systemPropertyVariables>
             <playground.baseUrl>${playground.baseUrl}</playground.baseUrl>
             <playground.headless>${playground.headless}</playground.headless>
