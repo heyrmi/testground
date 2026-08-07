@@ -147,13 +147,11 @@ jobs:
       # The request log answers the question a browser-side failure cannot: a
       # form that was never submitted and one that was submitted and refused
       # look identical from the page, and differ by one line here.
-      - name: The playground's request log
-        if: failure()
-        run: tail -n 200 playground.log
-
       - uses: actions/upload-artifact@v5
         if: failure()
         with:
-          name: surefire-reports
-          path: examples/selenium-java/target/surefire-reports/
+          name: selenium-failure
+          path: |
+            examples/selenium-java/target/surefire-reports/
+            playground.log
           retention-days: 7
