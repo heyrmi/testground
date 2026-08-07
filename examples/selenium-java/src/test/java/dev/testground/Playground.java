@@ -253,4 +253,33 @@ abstract class Playground {
     protected void click(String id) {
         find(id).click();
     }
+
+    /**
+     * Types into a field and makes sure the field kept what was typed.
+     *
+     * <p>sendKeys is not atomic and the browser is free to drop keystrokes it
+     * is not ready for. A field located just after a navigation is attached
+     * before the page has settled, and typing into it there loses characters:
+     * on a CI runner this produced "49364" for a six-digit code, and sometimes
+     * an empty field, while a laptop never dropped one. The failure then
+     * surfaces as a rejected value rather than as a typing problem, which is
+     * the wrong place entirely to start looking.
+     *
+     * <p>Re-reading the value and typing again until it sticks is the fix,
+     * bounded by the same timeout as every other wait here. Clearing first
+     * matters: a retry that appended would turn a half-typed value into a
+     * doubled one.
+     */
+    protected void type(String id, String text) {
+        wait.withMessage(() -> "\"" + text + "\" would not stay in data-testid=\"" + id + "\"")
+                .until(d -> {
+                    WebElement field = find(id);
+                    if (text.equals(field.getDomProperty("value"))) {
+                        return true;
+                    }
+                    field.clear();
+                    field.sendKeys(text);
+                    return text.equals(field.getDomProperty("value"));
+                });
+    }
 }

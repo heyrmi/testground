@@ -133,11 +133,10 @@ class TwoFactorTest extends Playground {
     /** Gets past the password half of the login, which is all this account's password buys. */
     private void passwordStep() {
         open(PAGE);
-        // Cleared first: this page pre-fills the username, so sendKeys alone
-        // would append to it and post "twofactortwofactor".
-        find("field-username").clear();
-        find("field-username").sendKeys("twofactor");
-        find("field-password").sendKeys("twofactor123");
+        // type clears first, which this page needs twice over: it pre-fills the
+        // username, so appending would post "twofactortwofactor".
+        type("field-username", "twofactor");
+        type("field-password", "twofactor123");
         click("submit");
     }
 
@@ -159,17 +158,7 @@ class TwoFactorTest extends Playground {
      * sake belongs in ButtonsTest, where that is the subject.
      */
     private void enterCode(String code) {
-        WebElement field = find("field-code");
-        field.sendKeys(code);
-
-        // Guarded rather than assumed: if the keystrokes never landed, the
-        // failure should say so here instead of looking like a refused code
-        // four assertions later.
-        assertEquals(
-                code,
-                field.getDomProperty("value"),
-                "the code never reached the field, so the submission below proves nothing");
-
+        type("field-code", code);
         find("code-form").submit();
     }
 
