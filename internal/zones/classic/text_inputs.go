@@ -47,6 +47,7 @@ func textInputs() page {
 		Tags:     []string{"forms", "inputs", "post-redirect-get", "stale-elements"},
 		Concepts: []string{"full page loads", "stale element references", "303 redirect after post", "Enter-key submission"},
 		Selectors: []challenge.Selector{
+			{TestID: "form", Note: "The form; submitting reloads the page, so every element handle taken before it goes stale"},
 			{TestID: "field-text", Role: "textbox", Note: "Plain text input"},
 			{TestID: "field-password", Role: "textbox", Note: "Password input; its value is never echoed back"},
 			{TestID: "field-email", Role: "textbox", Note: "type=email, so the browser validates it before posting"},

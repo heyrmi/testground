@@ -51,6 +51,7 @@ func fieldStates() page {
 		Tags:     []string{"forms", "disabled", "readonly", "aria", "labels"},
 		Concepts: []string{"disabled fields are not submitted", "aria-disabled is not disabled", "accessible names", "placeholder is not a label"},
 		Selectors: []challenge.Selector{
+			{TestID: "form", Note: "The form; what it posts is the difference between readonly and disabled"},
 			{TestID: "field-readonly", Role: "textbox", Note: "readonly: focusable, uneditable, and still posted"},
 			{TestID: "field-disabled", Role: "textbox", Note: "disabled: not focusable and never reaches the server"},
 			{TestID: "field-aria-disabled", Role: "textbox", Note: "aria-disabled: editable in the browser and posted, but reported disabled by tooling"},

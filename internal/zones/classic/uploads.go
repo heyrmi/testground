@@ -60,6 +60,7 @@ func uploads() page {
 		Tags:     []string{"files", "upload", "multipart", "validation"},
 		Concepts: []string{"file inputs cannot be clicked", "accept is advisory", "server-side validation is the real one", "size limits apply after transfer"},
 		Selectors: []challenge.Selector{
+			{TestID: "form", Note: "The multipart form the files post through"},
 			{TestID: "file-single", Note: "One file at a time"},
 			{TestID: "file-multiple", Note: "Accepts several files in one go"},
 			{TestID: "file-restricted", Note: "Carries accept, which filters the picker and nothing else"},

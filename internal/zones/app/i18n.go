@@ -34,7 +34,7 @@ func internationalisation() challenge.Challenge {
 		Concepts: []string{"prose assertions break under translation", "locale-dependent number and date formats", "normalisation before comparison", "graphemes are not characters"},
 		Selectors: []challenge.Selector{
 			{TestID: "language-switcher", Note: "The locale buttons"},
-			{TestID: "locale-ar-EG", Role: "button", Note: "Switches to Arabic, which reverses the layout"},
+			{TestID: "locale-ar-EG", Role: "button", Family: "locale-<s>", Note: "Switches to Arabic, which reverses the layout; one button per locale tag"},
 			{TestID: "locale-panel", Note: "Publishes the current locale and direction as attributes"},
 			{TestID: "greeting", Note: "Prose, and therefore the wrong thing to assert on"},
 			{TestID: "translated-action", Role: "button", Note: "The label that grows under translation"},

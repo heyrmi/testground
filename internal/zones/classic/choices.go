@@ -39,11 +39,13 @@ func choices() page {
 		Tags:     []string{"forms", "inputs", "select", "checkbox", "radio"},
 		Concepts: []string{"repeated form fields", "multi-select APIs", "disabled options", "default checked state"},
 		Selectors: []challenge.Selector{
+			{TestID: "form", Note: "The form every group posts through; repeated names arrive as repeated values"},
 			{TestID: "topping-cheese", Role: "checkbox", Note: "Starts checked; shares the name topping with its siblings"},
 			{TestID: "topping-olives", Role: "checkbox", Note: "Same name, different value"},
 			{TestID: "topping-anchovies", Role: "checkbox", Note: "Same name again"},
 			{TestID: "delivery-standard", Role: "radio", Note: "Radio group; selecting one clears the others"},
 			{TestID: "delivery-express", Role: "radio", Note: "Second option in the same group"},
+			{TestID: "delivery-courier", Role: "radio", Note: "Third option in the same group, and the one that starts checked"},
 			{TestID: "field-country", Role: "combobox", Note: "Single select with optgroup headings and one disabled option"},
 			{TestID: "field-languages", Role: "listbox", Note: "Multi-select; needs the select API, not clicks"},
 			{TestID: "field-newsletter", Role: "checkbox", Note: "Lone checkbox, unchecked by default"},

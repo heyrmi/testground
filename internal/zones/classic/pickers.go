@@ -44,6 +44,7 @@ func pickers() page {
 		Tags:     []string{"forms", "inputs", "slider", "date", "colour"},
 		Concepts: []string{"keyboard interaction", "unreachable native dialogs", "value format versus displayed format", "events from setting a value"},
 		Selectors: []challenge.Selector{
+			{TestID: "form", Note: "The form the pickers post through"},
 			{TestID: "field-volume", Role: "slider", Note: "range 0-100, step 10, starts at 30"},
 			{TestID: "field-colour", Note: "type=color; clicking it opens a dialog automation cannot reach"},
 			{TestID: "field-date", Note: "type=date; the value is always yyyy-mm-dd whatever the display shows"},

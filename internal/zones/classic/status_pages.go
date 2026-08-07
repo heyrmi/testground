@@ -55,7 +55,7 @@ func statusPages() page {
 		Tags:     []string{"navigation", "status-codes", "errors", "retry-after"},
 		Concepts: []string{"a rendered error page still failed", "asserting on the response", "Retry-After", "content assertions are not health checks"},
 		Selectors: []challenge.Selector{
-			{TestID: "status-link-404", Role: "link", Note: "Goes to the 404 page"},
+			{TestID: "status-link-404", Role: "link", Family: "status-link-<n>", Note: "Goes to the 404 page; there is one link per status the page offers"},
 			{TestID: "status-link-500", Role: "link", Note: "Goes to the 500 page"},
 			{TestID: "status-link-503", Role: "link", Note: "Goes to the 503 page, which carries Retry-After"},
 			{TestID: "status-code", Transient: true, Note: "On each error page: the code it was served with"},

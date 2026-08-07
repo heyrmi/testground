@@ -42,6 +42,8 @@ func virtualList() challenge.Challenge {
 			{TestID: "row", Role: "row", Note: "One rendered row; narrow by its data-index attribute"},
 			{TestID: "row-index", Note: "Index cell, inside a row"},
 			{TestID: "row-name", Note: "Name cell, inside a row"},
+			{TestID: "row-email", Note: "Email cell, inside a row"},
+			{TestID: "row-amount", Note: "Amount cell, inside a row"},
 			{TestID: "row-status", Note: "Status cell, inside a row"},
 			{TestID: "row-total", Note: "How many rows the data set holds"},
 			{TestID: "row-rendered", Note: "How many rows are elements right now"},

@@ -43,6 +43,7 @@ func websocketBasics() page {
 			{TestID: "ticker-state", Note: "closed, connecting or open"},
 			{TestID: "ticker-count", Note: "Messages received; this is the thing to wait on"},
 			{TestID: "ticker-last-seq", Note: "The highest sequence number seen"},
+			{TestID: "message-log", Note: "The list both sockets append to; present and empty until one of them speaks"},
 			{TestID: "log-line", Transient: true, Note: "One per message, oldest first"},
 		},
 		Endpoints: []challenge.Endpoint{
@@ -85,6 +86,7 @@ func reconnects() page {
 		Concepts: []string{"a dropped socket looks like a quiet one", "reconnect generations", "sequence versus arrival order", "state that is briefly correct"},
 		Selectors: []challenge.Selector{
 			{TestID: "flaky-connect", Role: "button", Note: "Opens the socket that will be dropped"},
+			{TestID: "flaky-stop", Role: "button", Note: "Gives up reconnecting; without it the client keeps coming back"},
 			{TestID: "flaky-state", Note: "closed, connecting, open or reconnecting"},
 			{TestID: "flaky-drops", Note: "How many times the connection has been lost"},
 			{TestID: "flaky-generation", Note: "Which connection the messages on screen came from"},
@@ -92,6 +94,7 @@ func reconnects() page {
 			{TestID: "shuffled-connect", Role: "button", Note: "Opens the out-of-order socket"},
 			{TestID: "arrival-order", Note: "Sequence numbers in the order they arrived"},
 			{TestID: "sorted-order", Note: "The same numbers, sorted, which is what a user should see"},
+			{TestID: "shuffled-outcome", Note: "Empty on load; the done marker is added inside it when the socket closes"},
 			{TestID: "shuffled-done", Transient: true, Note: "Present once every message has arrived"},
 		},
 		Endpoints: []challenge.Endpoint{

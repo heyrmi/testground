@@ -30,6 +30,7 @@ func toast() challenge.Challenge {
 			{TestID: "toast-count", Note: "Toasts raised so far in this page load; survives dismissal"},
 			{TestID: "toast-last", Note: "Sequence number of the most recently dismissed toast"},
 			{TestID: "toast-live", Note: "How many toasts are on screen right now"},
+			{TestID: "dismiss-ms", Note: "The dwell currently in effect, in milliseconds"},
 		},
 		Controls: []challenge.Control{
 			{

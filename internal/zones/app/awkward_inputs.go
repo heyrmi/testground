@@ -29,7 +29,7 @@ func otpInput() challenge.Challenge {
 		Concepts: []string{"one field made of many", "focus moving between keystrokes", "paste as a bulk path", "no element holds the whole value"},
 		Selectors: []challenge.Selector{
 			{TestID: "otp-group", Note: "The row of boxes"},
-			{TestID: "otp-0", Role: "textbox", Note: "First box; each is otp-<index>, zero based"},
+			{TestID: "otp-0", Role: "textbox", Family: "otp-<n>", Note: "First box; each is otp-<index>, zero based"},
 			{TestID: "otp-5", Role: "textbox", Note: "Last box"},
 			{TestID: "otp-value", Note: "The assembled code, which no input element holds"},
 			{TestID: "otp-verdict", Note: "incomplete, accepted or rejected"},
@@ -68,7 +68,7 @@ func fakeControls() challenge.Challenge {
 			{TestID: "toggle", Role: "switch", Note: "A div with a role; its state is on data-state and aria-checked"},
 			{TestID: "toggle-state", Note: "on or off, in text"},
 			{TestID: "rating", Role: "radiogroup", Note: "The star row"},
-			{TestID: "star-3", Role: "radio", Note: "Third star; each is star-<n>, one based"},
+			{TestID: "star-3", Role: "radio", Family: "star-<n>", Note: "Third star; each is star-<n>, one based"},
 			{TestID: "rating-value", Note: "The rating actually chosen"},
 			{TestID: "rating-shown", Note: "What the stars are currently drawing, which the pointer changes"},
 			{TestID: "slider-track", Note: "Press and drag along this; there is no input"},

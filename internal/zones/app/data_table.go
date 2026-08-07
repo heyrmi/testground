@@ -46,6 +46,7 @@ func dataTable() challenge.Challenge {
 		Selectors: []challenge.Selector{
 			{TestID: "table", Role: "table", Note: "The table itself"},
 			{TestID: "sort-name", Role: "columnheader", Note: "Sorts by name; each header is sort-<column>"},
+			{TestID: "sort-status", Role: "columnheader", Note: "Sorts by status, where several rows share a value and the order within them is the server's to choose"},
 			{TestID: "sort-amount", Role: "columnheader", Note: "Sorts by amount"},
 			{TestID: "current-sort", Note: "The sort the rows on screen were fetched with"},
 			{TestID: "filter", Role: "searchbox", Note: "Filters by name on the server"},

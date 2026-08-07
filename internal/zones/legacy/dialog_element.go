@@ -39,6 +39,7 @@ func dialogElement() page {
 			{TestID: "modeless-dialog", Note: "The non-modal dialog element"},
 			{TestID: "confirm-dialog", Role: "button", Note: "Inside the modal; closes it with a return value"},
 			{TestID: "cancel-dialog", Role: "button", Note: "Inside the modal; closes it with a different one"},
+			{TestID: "close-modeless", Role: "button", Note: "Inside the non-modal dialog; the page stays interactive around it"},
 			{TestID: "dialog-return", Note: "The return value the modal closed with; the only lasting record"},
 		},
 		Stability: challenge.Stable,

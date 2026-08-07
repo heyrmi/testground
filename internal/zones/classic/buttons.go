@@ -36,6 +36,7 @@ func buttons() page {
 		Tags:     []string{"forms", "buttons", "links", "disabled"},
 		Concepts: []string{"role over appearance", "submit button values", "inert controls", "click targets inside a control"},
 		Selectors: []challenge.Selector{
+			{TestID: "form", Note: "The form the buttons post; the reset returns it to its served values rather than to empty"},
 			{TestID: "submit-save", Role: "button", Note: "type=submit, posts action=save"},
 			{TestID: "submit-publish", Role: "button", Note: "type=submit, posts action=publish"},
 			{TestID: "reset", Role: "button", Note: "type=reset, clears the field without posting"},
