@@ -1,0 +1,38 @@
+# What the image build needs is the Go module and the three asset trees
+# go:embed reaches for: templates, web/static and web/app/dist. None of those
+# are listed here, and nothing below may ever grow a pattern that swallows
+# them -- an excluded asset tree fails at embed time with a message about a
+# missing directory rather than at run time, but it is still an hour lost.
+
+.git
+.github
+.dockerignore
+Dockerfile
+.goreleaser.yaml
+Makefile
+
+# The host's own build output. Copying it in would drop a darwin binary into a
+# linux image, and the COPY would silently win over the one this build just
+# produced.
+/dist
+/playground
+*.exe
+*.test
+*.out
+
+# Installed inside the builder, never carried in from the host: node_modules is
+# large, platform-specific, and unused by a build that only compiles Go.
+web/app/node_modules
+examples/playwright-ts/node_modules
+
+# Reference suites, prose and the planning document. None of them is embedded,
+# so all any of them can do here is invalidate the build cache.
+examples
+docs
+*.md
+
+# Editors and OS droppings.
+.DS_Store
+.idea
+.vscode
+.playwright-mcp

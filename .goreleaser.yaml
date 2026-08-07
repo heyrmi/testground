@@ -38,6 +38,107 @@ archives:
 checksum:
   name_template: checksums.txt
 
+# One entry per architecture, because a single `docker build` produces a single
+# architecture and the two are stitched together by docker_manifests below.
+# Nothing here compiles: GoReleaser has already cross-compiled the binary, so
+# the Dockerfile's release stage only copies it in, and building the arm64
+# image on an amd64 runner needs no emulation because no instruction in that
+# stage is ever executed.
+dockers:
+  - id: linux-amd64
+    ids: [playground]
+    goos: linux
+    goarch: amd64
+    use: buildx
+    dockerfile: Dockerfile
+    image_templates:
+      - 'ghcr.io/heyrmi/testground:{{ .Version }}-amd64'
+    build_flag_templates:
+      - '--target=release'
+      - '--platform=linux/amd64'
+      - '--build-arg=VERSION={{ .Version }}'
+      - '--build-arg=COMMIT={{ .FullCommit }}'
+      - '--build-arg=DATE={{ .Date }}'
+
+  - id: linux-arm64
+    ids: [playground]
+    goos: linux
+    goarch: arm64
+    use: buildx
+    dockerfile: Dockerfile
+    image_templates:
+      - 'ghcr.io/heyrmi/testground:{{ .Version }}-arm64'
+    build_flag_templates:
+      - '--target=release'
+      - '--platform=linux/arm64'
+      - '--build-arg=VERSION={{ .Version }}'
+      - '--build-arg=COMMIT={{ .FullCommit }}'
+      - '--build-arg=DATE={{ .Date }}'
+
+# The per-architecture tags above exist only to be referenced from here. What
+# anyone pulls is one of these two names, and the registry hands them the
+# architecture they are on.
+docker_manifests:
+  - name_template: 'ghcr.io/heyrmi/testground:{{ .Version }}'
+    image_templates:
+      - 'ghcr.io/heyrmi/testground:{{ .Version }}-amd64'
+      - 'ghcr.io/heyrmi/testground:{{ .Version }}-arm64'
+
+  - name_template: 'ghcr.io/heyrmi/testground:latest'
+    image_templates:
+      - 'ghcr.io/heyrmi/testground:{{ .Version }}-amd64'
+      - 'ghcr.io/heyrmi/testground:{{ .Version }}-arm64'
+    # A release candidate must not become what an unqualified pull resolves to.
+    skip_push: auto
+
+# A cask rather than a formula: `brews` is deprecated and already fails
+# `goreleaser check`, so writing one now would ship a v1.0.0 on a stanza
+# scheduled for removal.
+#
+# The tap lives in its own repository, so this needs a token GITHUB_TOKEN
+# cannot substitute for -- the workflow's own token is scoped to this
+# repository, and writing the cask is a push to another one.
+#
+# The lookup is `index .Env` rather than `.Env.HOMEBREW_TAP_TOKEN` on purpose.
+# The dotted form is a hard error when the variable is unset, which would fail
+# the entire release -- archives, checksums and images included -- for anyone
+# releasing from a fork with no tap secret. This form yields an empty string
+# instead, and skip_upload below turns that into a skipped cask and a release
+# that otherwise completes.
+homebrew_casks:
+  - name: testground
+    binaries: [playground]
+    repository:
+      owner: heyrmi
+      name: homebrew-tap
+      token: '{{ index .Env "HOMEBREW_TAP_TOKEN" }}'
+    directory: Casks
+    homepage: https://github.com/heyrmi/testground
+    description: A self-contained playground of browser-automation challenges for QA engineers
+    skip_upload: '{{ if index .Env "HOMEBREW_TAP_TOKEN" }}auto{{ else }}true{{ end }}'
+    # The download host is github.com and the homepage is a github.com URL, but
+    # `brew audit` still wants the ownership stated rather than inferred.
+    url:
+      verified: github.com/heyrmi/testground
+    hooks:
+      post:
+        # The release binaries are not signed or notarised, so macOS attaches
+        # com.apple.quarantine to anything curl fetched and Gatekeeper then
+        # refuses to run it. Stripping the attribute is what makes the very
+        # first `playground serve` after an install work instead of dying with
+        # a dialog about an unidentified developer.
+        install: |
+          if OS.mac?
+            system_command "/usr/bin/xattr", args: ["-dr", "com.apple.quarantine", "#{staged_path}/playground"]
+          end
+    caveats: |
+      Start the playground with:
+
+        playground serve
+
+      It binds 127.0.0.1:7373, and a second origin on 127.0.0.1:7374 that the
+      cross-origin frame challenges embed. Nothing is fetched over the network.
+
 changelog:
   use: github
   sort: asc
@@ -69,3 +170,19 @@ release:
 
     Then open http://127.0.0.1:7373. Nothing else is needed: no network, no
     Node runtime, no external services.
+
+    ### Homebrew
+
+    ```sh
+    brew install heyrmi/tap/testground
+    ```
+
+    ### Docker
+
+    ```sh
+    docker run --rm -p 7373:7373 -p 7374:7374 ghcr.io/heyrmi/testground:{{ .Version }}
+    ```
+
+    Publish both ports. The image already binds 0.0.0.0, and the cross-origin
+    frame challenges embed the second one, so mapping only 7373 leaves those
+    pages pointing at a socket nothing answers.
