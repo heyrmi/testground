@@ -10,8 +10,13 @@ test('the endpoint says in advance which tasks the server will refuse', async ({
     .toEqual([3, 6])
 })
 
+// The latency is generous on purpose. Both this test and the next assert on a
+// state that exists only while the request is in flight, so the window has to
+// be wider than any scheduling delay a loaded machine can introduce -- at 300ms
+// a busy runner can land its first poll after the server has already answered,
+// and the intermediate state is then unobservable rather than absent.
 test('a write the server accepts sticks', async ({ page }) => {
-  await page.goto('/app/optimistic-revert?latencyMs=300')
+  await page.goto('/app/optimistic-revert?latencyMs=1500')
   const task = row(page, 1)
 
   await task.getByTestId('task-toggle').click()
@@ -22,7 +27,7 @@ test('a write the server accepts sticks', async ({ page }) => {
 })
 
 test('a write the server refuses flips back', async ({ page }) => {
-  await page.goto('/app/optimistic-revert?latencyMs=300')
+  await page.goto('/app/optimistic-revert?latencyMs=1500')
   const task = row(page, 3)
 
   await task.getByTestId('task-toggle').click()
