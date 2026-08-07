@@ -1,6 +1,7 @@
 # Build output
 /dist/
 /playground
+/gen
 *.exe
 
 # Go

@@ -1,7 +1,7 @@
 BINARY := playground
 PKG    := ./cmd/playground
 
-.PHONY: all web media build run test fmt vet tidy clean
+.PHONY: all web media docs build run test fmt vet tidy clean
 
 all: web build
 
@@ -12,6 +12,11 @@ web:
 # committed bytes still match the generator. It needs ffmpeg; nothing else does.
 media:
 	go run ./scripts/genmedia
+
+# The documentation site, generated from the manifest so the catalogue cannot
+# drift from what the binary actually serves.
+docs:
+	go run ./docs/gen
 
 build:
 	go build -o $(BINARY) $(PKG)

@@ -1,0 +1,4 @@
+# The built site. It is regenerated from the Markdown beside this file and from
+# the challenge manifest on every run, so committing it would only ever produce
+# review noise and a second copy of the catalogue to disagree with the first.
+_site/

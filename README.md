@@ -18,6 +18,8 @@ testground v0.1.0 listening on http://127.0.0.1:7373 (seed 42)
 That is the whole setup. No Node runtime, no database, no external services,
 no internet connection.
 
+Full documentation, including the complete challenge catalogue: **[heyrmi.github.io/testground](https://heyrmi.github.io/testground/)**
+
 ---
 
 ## Why this exists

@@ -1,0 +1,107 @@
+name: Docs
+
+on:
+  push:
+    branches: [main]
+    # The catalogue is generated from the challenge registry, so a new challenge
+    # changes this site without anyone touching docs/. Watching only docs/ would
+    # leave the published catalogue quietly behind main, which is the exact
+    # staleness the generated page exists to prevent.
+    paths:
+      - 'docs/**'
+      - 'CONTRIBUTING.md'
+      - 'internal/challenge/**'
+      - 'internal/zones/**'
+      - 'internal/playground/**'
+      - 'cmd/playground/**'
+      - '.github/workflows/docs.yml'
+  pull_request:
+    paths:
+      - 'docs/**'
+      - 'CONTRIBUTING.md'
+      - 'internal/challenge/**'
+      - 'internal/zones/**'
+      - 'internal/playground/**'
+      - 'cmd/playground/**'
+      - '.github/workflows/docs.yml'
+  # A deploy that has to wait for the next documentation commit is a deploy
+  # nobody can retry after fixing the Pages settings.
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# One deploy at a time, and never cancel one in flight: a cancelled deploy can
+# leave Pages serving the half of an upload that made it.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    name: Build the site
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-go@v6
+        with:
+          go-version: '1.23'
+
+      # The generator is part of the module, so its own tests decide whether the
+      # site is publishable. They cover the link resolver, which fails the build
+      # on a cross-reference that no longer resolves.
+      - run: go test ./docs/...
+
+      # Compiled once and handed over as JSON, rather than letting the generator
+      # shell out to `go run` and compile the same binary a second time.
+      - name: Build the playground and take its manifest
+        run: |
+          go build -o playground ./cmd/playground
+          ./playground manifest > manifest.json
+
+      - name: Generate the site
+        run: go run ./docs/gen -manifest manifest.json -out _site
+
+      # A published site with no catalogue would still look complete, so this
+      # asserts the generated page actually carries the challenges the manifest
+      # claims rather than merely existing.
+      - name: Check the catalogue is complete
+        run: |
+          declared=$(jq '.count' manifest.json)
+          # grep exits non-zero on no matches, which under `bash -e` would end
+          # the step with no message at all rather than with the count that
+          # explains it.
+          rendered=$(grep -c 'class="challenge" id="ch-' _site/catalogue.html || echo 0)
+          echo "manifest declares $declared challenges, the catalogue renders $rendered"
+          if [ "$declared" -ne "$rendered" ]; then
+            echo "The catalogue does not match the manifest."
+            exit 1
+          fi
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
+  deploy:
+    name: Deploy to Pages
+    # Pull requests build the site but must not publish it. A fork's pull
+    # request cannot be allowed to replace the documentation of the project it
+    # is proposing a change to.
+    if: github.event_name != 'pull_request'
+    needs: build
+    runs-on: ubuntu-latest
+
+    permissions:
+      pages: write
+      id-token: write
+
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    steps:
+      # This step fails until the repository owner sets Pages to build from
+      # GitHub Actions, in Settings, Pages, Source. Nothing in a workflow can
+      # turn that on for itself.
+      - id: deployment
+        uses: actions/deploy-pages@v4

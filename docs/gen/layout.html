@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{.Title}} — testground documentation</title>
+<meta name="description" content="{{.Lead}}">
+<!-- Inline rather than linked, so a page opened from a file:// path or from an
+     air-gapped mirror still has its own icon and asks the network for nothing. -->
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%231c1b19'/%3E%3Ccircle cx='16' cy='16' r='10' fill='none' stroke='%23b4541e' stroke-width='2.5'/%3E%3Ccircle cx='16' cy='16' r='3.5' fill='%23b4541e'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="assets/site.css">
+</head>
+<body>
+<a class="skip" href="#content">Skip to content</a>
+
+<header class="masthead">
+  <div class="masthead__inner">
+    <a class="masthead__name" href="index.html">test<span>ground</span> docs</a>
+    <nav class="masthead__links" aria-label="Elsewhere">
+      <a href="https://github.com/heyrmi/testground" rel="noopener noreferrer">Repository</a>
+      <a href="https://github.com/heyrmi/testground#readme" rel="noopener noreferrer">README</a>
+      <a href="https://github.com/heyrmi/testground/releases" rel="noopener noreferrer">Releases</a>
+    </nav>
+  </div>
+</header>
+
+<div class="shell">
+  <nav class="sidebar" aria-label="Documentation">
+    <ol class="sidebar__pages">
+      {{range .Nav}}
+      <li>
+        <a href="{{.Href}}"{{if .Current}} aria-current="page"{{end}}>{{.Label}}</a>
+        <span class="sidebar__lead">{{.Lead}}</span>
+        {{if and .Current $.Contents}}
+        <ul class="sidebar__contents">
+          {{range $.Contents}}
+          <li class="level-{{.Level}}"><a href="#{{.ID}}">{{.Text}}</a></li>
+          {{end}}
+        </ul>
+        {{end}}
+      </li>
+      {{end}}
+    </ol>
+  </nav>
+
+  <main id="content" class="prose">
+    {{.Body}}
+  </main>
+</div>
+
+<footer class="colophon">
+  <p>
+    Generated from the challenge manifest of {{.Version}} by
+    <code>go run ./docs/gen</code>. No script, no fonts and no network: this
+    site reads the same from a file:// path as it does here.
+  </p>
+</footer>
+</body>
+</html>
