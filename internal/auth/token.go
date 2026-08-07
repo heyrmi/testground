@@ -46,7 +46,15 @@ func (s *Store) Issue(now time.Time, login Login, kind string) (string, error) {
 		},
 	}
 
-	return jwt.NewWithClaims(jwt.SigningMethodHS256, claims).SignedString(s.secret)
+	signed, err := jwt.NewWithClaims(jwt.SigningMethodHS256, claims).SignedString(s.secret)
+	if err != nil {
+		return "", err
+	}
+
+	// Recorded only once there is really a token, so a signing failure cannot
+	// leave behind an id that a later logout revokes on nobody's behalf.
+	s.noteIssued(id)
+	return signed, nil
 }
 
 // ErrExpired is returned separately from every other rejection, because "your

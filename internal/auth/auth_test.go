@@ -178,6 +178,136 @@ func TestRevocationMakesLogoutMeanSomething(t *testing.T) {
 	}
 }
 
+// Nothing about checking a signed token reaches back to the server, so unless
+// the logout withdraws the ids as well as the login, a bearer token taken
+// before it goes on working afterwards and the logout is browser-side theatre.
+func TestLogOutRevokesTokensIssuedBeforeIt(t *testing.T) {
+	store, _ := newStore(t, 42)
+	now := time.Now()
+
+	login, _, ok := store.Attempt(now, "admin", "admin123")
+	if !ok {
+		t.Fatal("could not log in")
+	}
+	access, _ := store.Issue(now, *login, "access")
+	refresh, _ := store.Issue(now, *login, "refresh")
+	if _, err := store.Verify(now, access); err != nil {
+		t.Fatalf("a fresh access token did not verify: %v", err)
+	}
+
+	store.LogOut()
+
+	if _, err := store.Verify(now, access); err == nil {
+		t.Error("an access token minted before the logout still verified after it")
+	}
+	// The refresh token has to go with it, or one request buys the whole login
+	// back and the logout means nothing again.
+	if _, err := store.Verify(now, refresh); err == nil {
+		t.Error("a refresh token outlived the logout")
+	}
+	// Revoked and expired are answered differently -- a suite meeting the
+	// second one refreshes, which would be the wrong move here.
+	if _, err := store.Verify(now, access); err == ErrExpired {
+		t.Error("a revoked token was reported as expired")
+	}
+}
+
+// Tokens issued after logging back in are the caller's to use. The id carries
+// the instant it was minted at and the session clock can be frozen, so this is
+// also the case where the new token is byte for byte the one just revoked.
+func TestTokensIssuedAfterALogOutStillWork(t *testing.T) {
+	store, _ := newStore(t, 42)
+	now := time.Now()
+	login := Login{Username: "admin", Role: "admin"}
+
+	first, _ := store.Issue(now, login, "access")
+	store.LogOut()
+	if _, err := store.Verify(now, first); err == nil {
+		t.Fatal("the logout did not revoke the token issued before it")
+	}
+
+	second, _ := store.Issue(now, login, "access")
+	if _, err := store.Verify(now, second); err != nil {
+		t.Fatalf("a token issued after logging back in was dead on arrival: %v", err)
+	}
+}
+
+// Two workers on one seed share a signing key by design, so nothing in the
+// token itself tells them apart. Revocation must not be the thing that leaks:
+// one worker logging out cannot start rejecting another's requests.
+func TestRevocationIsScopedToItsSession(t *testing.T) {
+	store := session.NewStore(session.Options{Seed: 42})
+	alice := For(store.Open("worker-one"))
+	bob := For(store.Open("worker-two"))
+	now := time.Now()
+
+	token, _ := alice.Issue(now, Login{Username: "admin", Role: "admin"}, "access")
+	alice.LogOut()
+
+	if _, err := bob.Verify(now, token); err != nil {
+		t.Fatalf("one worker's logout rejected a token in another: %v", err)
+	}
+}
+
+// The refresh challenge's released path, which nothing here may disturb: sixty
+// seconds, then expiry rather than rejection, then a refresh that works. No
+// logout happens in it, so revocation has to stay entirely out of the way.
+func TestRefreshingAcrossExpiryIsUnaffected(t *testing.T) {
+	store, _ := newStore(t, 42)
+	now := time.Now()
+
+	login, _, ok := store.Attempt(now, "user", "user123")
+	if !ok {
+		t.Fatal("could not log in")
+	}
+	access, _ := store.Issue(now, *login, "access")
+	refresh, _ := store.Issue(now, *login, "refresh")
+
+	if _, err := store.Verify(now, access); err != nil {
+		t.Fatalf("the first access token did not verify: %v", err)
+	}
+
+	later := now.Add(AccessLifetime + time.Second)
+	if _, err := store.Verify(later, access); err != ErrExpired {
+		t.Fatalf("past the lifetime: %v, want ErrExpired", err)
+	}
+
+	claims, err := store.Verify(later, refresh)
+	if err != nil {
+		t.Fatalf("the refresh token did not outlive the access token: %v", err)
+	}
+	renewed, _ := store.Issue(later, Login{Username: claims.Username, Role: claims.Role}, "access")
+	if _, err := store.Verify(later, renewed); err != nil {
+		t.Fatalf("the refreshed access token was rejected: %v", err)
+	}
+}
+
+func TestResetClearsRevocationState(t *testing.T) {
+	store, _ := newStore(t, 42)
+	now := time.Now()
+	login := Login{Username: "admin", Role: "admin"}
+
+	token, _ := store.Issue(now, login, "access")
+	store.LogOut()
+	if _, err := store.Verify(now, token); err == nil {
+		t.Fatal("the logout did not revoke a token issued before it")
+	}
+
+	// Reset is the clean slate a suite takes between tests, so a revocation
+	// must not outlive it any more than a login does.
+	store.Reset()
+	if _, err := store.Verify(now, token); err != nil {
+		t.Fatalf("a revocation survived the reset: %v", err)
+	}
+
+	// The record of what was issued goes too, or a logout in some later test
+	// reaches back and revokes a token minted before the slate was wiped.
+	store.LogOut()
+	if _, err := store.Verify(now, token); err != nil {
+		t.Fatalf("a logout after the reset revoked a token from before it: %v", err)
+	}
+}
+
 func TestMagicTokensWorkExactlyOnce(t *testing.T) {
 	store, _ := newStore(t, 42)
 

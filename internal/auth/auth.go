@@ -96,7 +96,11 @@ type Store struct {
 	attempts    int
 	lockedUntil time.Time
 	magicTokens map[string]string
-	revoked     map[string]bool
+	// issued names the tokens minted for the login that is current now. Without
+	// it the store cannot say which ids belong to the session it is ending, and
+	// revocation could only ever be driven by hand from a test.
+	issued  map[string]bool
+	revoked map[string]bool
 }
 
 // For returns the session's auth store, creating it on first use.
@@ -120,6 +124,7 @@ func For(sess *session.Session) *Store {
 			secret:      secret,
 			totpSecret:  base32.StdEncoding.WithPadding(base32.NoPadding).EncodeToString(raw),
 			magicTokens: make(map[string]string),
+			issued:      make(map[string]bool),
 			revoked:     make(map[string]bool),
 		}
 	})
@@ -215,10 +220,20 @@ func (s *Store) SignIn(now time.Time, user User) *Login {
 
 // LogOut ends the login on the server, which is the part that matters: a
 // cookie a client keeps is worth nothing once the server has forgotten it.
+//
+// The same has to be true of a bearer token, and a signed token is otherwise
+// self-contained -- nothing about verifying one reaches back to the server. So
+// every id minted for the login being ended is withdrawn here, which is what
+// stops an access token taken before the logout from outliving it.
 func (s *Store) LogOut() {
 	s.mu.Lock()
 	defer s.mu.Unlock()
+
 	s.login = nil
+	for id := range s.issued {
+		s.revoked[id] = true
+	}
+	s.issued = make(map[string]bool)
 }
 
 // Attempts reports failed logins since the last success, and when the throttle
@@ -292,6 +307,22 @@ func (s *Store) Revoke(id string) {
 	s.revoked[id] = true
 }
 
+// noteIssued records an id against the current login so LogOut has something to
+// withdraw.
+//
+// It also lifts any earlier revocation of that id, which is not as odd as it
+// reads: an id carries the instant it was minted at, and the session clock can
+// be frozen, so signing in again at a standstill reproduces a token byte for
+// byte. Leaving it revoked would hand a caller a token that was dead on
+// arrival, with no way to tell it apart from the one the logout killed.
+func (s *Store) noteIssued(id string) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
+	s.issued[id] = true
+	delete(s.revoked, id)
+}
+
 // Revoked reports whether a token id has been withdrawn.
 func (s *Store) Revoked(id string) bool {
 	s.mu.Lock()
@@ -308,5 +339,6 @@ func (s *Store) Reset() {
 	s.attempts = 0
 	s.lockedUntil = time.Time{}
 	s.magicTokens = make(map[string]string)
+	s.issued = make(map[string]bool)
 	s.revoked = make(map[string]bool)
 }
