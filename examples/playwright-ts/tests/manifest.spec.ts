@@ -6,6 +6,38 @@ interface Selector {
   transient?: boolean
   /** Iframe test ids to descend before looking, outermost first. */
   frame?: string[]
+  /**
+   * A repeated set this selector represents, where <n> stands for a run of
+   * digits and <s> for a run of word characters. A page with six identical
+   * boxes declares "otp-<n>" once rather than listing every index.
+   */
+  family?: string
+}
+
+/**
+ * The same expansion the server does, so both sides agree on what a family
+ * covers. Everything outside a placeholder is matched literally: a pattern
+ * must not become a wildcard through a character that happens to mean
+ * something to a regular expression.
+ */
+function familyPattern(family: string): RegExp {
+  const expanded = family
+    .split(/(<[ns]>)/)
+    .map((part) =>
+      part === '<n>'
+        ? '[0-9]+'
+        : part === '<s>'
+          ? '[A-Za-z0-9_-]+'
+          : part.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'),
+    )
+    .join('')
+  return new RegExp(`^${expanded}$`)
+}
+
+/** Whether a rendered test id is a selector, or a member of the family it represents. */
+function covers(selector: Selector, testId: string): boolean {
+  if (selector.testId === testId) return true
+  return selector.family !== undefined && familyPattern(selector.family).test(testId)
 }
 
 interface Challenge {
@@ -15,7 +47,28 @@ interface Challenge {
   summary: string
   hint: string
   selectors: Selector[]
+  hostileLocators?: boolean
 }
+
+/**
+ * Test ids the shared chrome puts on every challenge page in a zone. They
+ * describe the wrapper rather than the challenge, so no manifest entry claims
+ * them, and the reverse check would otherwise report the same handful of ids
+ * against every page in the suite.
+ */
+const chromeTestIds = new Set([
+  'meta-version',
+  'meta-seed',
+  'meta-session',
+  'back-to-index',
+  'back-to-zone',
+  'challenge-tier',
+  'challenge-zone',
+  'challenge-title',
+  'challenge-panel',
+  'challenge-hint',
+  'stage',
+])
 
 /**
  * A locator does not cross a frame boundary on its own, so a declared selector
@@ -108,6 +161,57 @@ test('selectors that only exist mid-interaction say so', async ({ page }) => {
           )
           .toHaveCount(0)
       }
+    })
+  }
+})
+
+test('every test id the page renders is declared by the challenge', async ({ page }) => {
+  const manifest = await (await page.request.get('/api/challenges')).json()
+
+  for (const challenge of manifest.challenges as Challenge[]) {
+    // A hostile-locators page withholds test ids because finding the elements
+    // without them is the exercise, and the registry lets it declare none at
+    // all. There is nothing here to hold its markup to.
+    if (challenge.hostileLocators) continue
+
+    await test.step(challenge.id, async () => {
+      await page.goto(challenge.url)
+
+      // The SPA zone renders nothing at all until the manifest it fetches
+      // arrives, so reading the DOM any earlier finds an empty document and
+      // passes without having checked anything. Soft, so a page that never
+      // renders is reported rather than abandoning the remaining challenges.
+      await expect
+        .soft(page.getByTestId('challenge-panel'), `${challenge.id} never rendered its panel`)
+        .toBeAttached()
+
+      // Only the top document: a locator does not cross a frame boundary and
+      // querySelectorAll does not enter a shadow root, so an id in either is
+      // out of reach here rather than evidence of a page that under-declares.
+      const rendered = await page.evaluate(() =>
+        [...document.querySelectorAll('[data-testid]')].map((el) =>
+          el.getAttribute('data-testid'),
+        ),
+      )
+
+      // Compared against every declaration, transient ones included. A
+      // transient selector that is present on load is the previous test's to
+      // report, and saying it twice in two different voices helps nobody.
+      const undeclared = [...new Set(rendered)]
+        .filter(
+          (id): id is string =>
+            id !== null &&
+            !chromeTestIds.has(id) &&
+            !challenge.selectors.some((s) => covers(s, id)),
+        )
+        .sort()
+
+      // The direction the presence check above cannot see: an element the page
+      // grew without anyone declaring it is a contract that exists in the
+      // markup and nowhere a reader would look for it.
+      expect
+        .soft(undeclared, `${challenge.id} renders test ids its manifest entry does not declare`)
+        .toEqual([])
     })
   }
 })
