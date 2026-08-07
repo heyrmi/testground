@@ -12,6 +12,7 @@ import javax.crypto.spec.SecretKeySpec;
 
 import org.junit.jupiter.api.Test;
 import org.openqa.selenium.JavascriptExecutor;
+import org.openqa.selenium.Keys;
 import org.openqa.selenium.WebElement;
 
 /** /classic/two-factor — two flows that cannot be finished from the page, and the back channel that finishes them. */
@@ -142,33 +143,23 @@ class TwoFactorTest extends Playground {
     }
 
     /**
-     * Types a code and submits it, dropping focus in between.
+     * Types a code and submits the form from the keyboard.
      *
-     * <p>Dropping focus is the whole reason this is a method. The field is
-     * marked {@code autocomplete="one-time-code"}, so the moment six digits land
-     * in it Chrome offers a suggestion of its own, in a popup that is browser
-     * chrome rather than DOM. The next click is spent dismissing that popup and
-     * never reaches the button underneath it. Nothing in the page changes while
-     * it is up, so there is nothing to wait for and nothing to locate: the form
-     * is simply never submitted, the login stays pending, and the failure reads
-     * like a wrong code.
+     * <p>Not by clicking the button, which is the obvious way and the one that
+     * failed. A click is delivered to a pixel: WebDriver scrolls the button into
+     * view and dispatches at its centre, so it depends on where the layout puts
+     * it, and Linux resolves different fonts than macOS and lays the page out
+     * differently. When something ends up over that point the click is reported
+     * as successful and the form is never submitted -- no error, no navigation,
+     * nothing to wait for, and a failure that looks like a refused code.
      *
-     * <p>The Playwright suite never meets this, because {@code fill} sets the
-     * value rather than typing it and the browser has no keystrokes to react to.
-     * Sending real keys is the price of driving the browser as a user does, and
-     * dealing with what the browser offers back is part of that job.
+     * <p>Enter in a field submits its form wherever the field happens to be, so
+     * it is both a real user action and one with no geometry in it. The button
+     * is still exercised: ButtonsTest is where clicking one is the subject.
      */
     private void enterCode(String code) {
         WebElement field = find("field-code");
         field.sendKeys(code);
-
-        // Blurring through the DOM rather than with a trailing Tab. Tab dropped
-        // focus on a developer machine and did not on a Linux CI runner, where
-        // the suggestion stayed up, swallowed the click meant for the button,
-        // and left the form sitting there unsubmitted -- no error, no
-        // navigation, nothing to wait for. WebDriver reports that click as
-        // successful, because as far as it is concerned it was.
-        ((JavascriptExecutor) driver).executeScript("arguments[0].blur()", field);
 
         // Guarded rather than assumed: if the keystrokes never landed, the
         // failure should say so here instead of looking like a refused code
@@ -178,7 +169,7 @@ class TwoFactorTest extends Playground {
                 field.getDomProperty("value"),
                 "the code never reached the field, so the submission below proves nothing");
 
-        click("submit-code");
+        field.sendKeys(Keys.ENTER);
     }
 
     @SuppressWarnings("unchecked")

@@ -1,5 +1,7 @@
 package dev.testground;
 
+import java.net.MalformedURLException;
+import java.net.URI;
 import java.time.Duration;
 import java.util.List;
 
@@ -12,6 +14,7 @@ import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
+import org.openqa.selenium.remote.RemoteWebDriver;
 import org.openqa.selenium.support.ui.ExpectedCondition;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
@@ -38,6 +41,15 @@ abstract class Playground {
             Boolean.parseBoolean(System.getProperty("playground.headless", "true"));
 
     /**
+     * A Selenium Grid to drive instead of a local Chrome, empty for local.
+     *
+     * <p>Worth having for its own sake -- a container pins the browser and the
+     * operating system, so a failure that only happens on CI can be reproduced
+     * without pushing a commit to find out.
+     */
+    private static final String REMOTE_URL = System.getProperty("playground.remoteUrl", "");
+
+    /**
      * How long a wait may retry before failing. Generous enough to survive a
      * loaded machine and short enough that a genuine hang is reported rather
      * than waited on.
@@ -58,7 +70,7 @@ abstract class Playground {
         // whatever size the machine happened to give us.
         options.addArguments("--window-size=1280,900", "--no-sandbox", "--disable-dev-shm-usage");
 
-        driver = new ChromeDriver(options);
+        driver = REMOTE_URL.isEmpty() ? new ChromeDriver(options) : remote(options);
         wait = new WebDriverWait(driver, TIMEOUT);
         pinSession();
     }
@@ -109,6 +121,14 @@ abstract class Playground {
                         + "  .catch(e => done(String(e)));");
         if (!Long.valueOf(200L).equals(status)) {
             throw new IllegalStateException("could not reset the session, the playground answered " + status);
+        }
+    }
+
+    private WebDriver remote(ChromeOptions options) {
+        try {
+            return new RemoteWebDriver(URI.create(REMOTE_URL).toURL(), options);
+        } catch (MalformedURLException e) {
+            throw new IllegalArgumentException("playground.remoteUrl is not a URL: " + REMOTE_URL, e);
         }
     }
 
